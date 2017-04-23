@@ -17,9 +17,10 @@ int main(int argc, char* argv[]) {
 				[](std::string&& s){ printf("%s\n",s.c_str()); }}
 		, {"opt", opt::type::optional_arg,
 				[](std::string&& s){ printf("%s\n",s.c_str()); }, 'o',
-				"Test desc                      asdf          asdf     alksj"
-				"asdffff asdf adsf dsaf  jkdsas dsfdssdfskadfskjf kjsdfk sa"}
-		, {"multi", opt::type::multi_arg, vec_fun, 'm'}
+				"Test desc asdf asdf alksj\n"
+				"asdffff asdf adsf dsaf  jkdsas dsfdss dfskadfsk\njf kjsdfk sa"}
+		, {"multiffffff", opt::type::multi_arg, vec_fun, 'm', "asd asfas dsf\n"
+				"asd dfs asf d dfadsaf dsfsfsdfsfsfdsd."}
 	};
 
 	bool succeeded = opt::parse_arguments(argc, argv, args);

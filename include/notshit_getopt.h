@@ -36,6 +36,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <cassert>
 #include <cstring>
@@ -169,6 +170,19 @@ struct options {
 inline bool print_help(std::vector<argument>& args, options&& option) {
 	std::cout << option.help_intro;
 	std::cout << std::endl;
+	const size_t la_width_max = 20;
+
+	size_t la_width = 0;
+	for (const auto& x : args) {
+		if (x.long_arg.size() + 2 > la_width) {
+			la_width = x.long_arg.size() + 2;
+		}
+	}
+	la_width += 4;
+	if (la_width > la_width_max) {
+		la_width = la_width_max;
+	}
+
 	for (const auto& x : args) {
 		std::cout << std::setw(2) << "";
 
@@ -179,8 +193,19 @@ inline bool print_help(std::vector<argument>& args, options&& option) {
 			std::cout << std::setw(5) << "";
 		}
 
-		std::cout << std::setw(20) << std::left << "--" + x.long_arg;
-		std::cout << x.description;
+		std::cout << std::setw(la_width) << std::left << "--" + x.long_arg;
+		if (x.long_arg.size() + 2 >= la_width) {
+			std::cout << std::endl;
+			std::cout << std::setw(la_width + 7) << "";
+		}
+
+		if (x.description.size() != 0) {
+			std::istringstream iss(x.description);
+			for (std::string line; std::getline(iss, line); ) {
+				std::cout << line << std::endl
+						<< std::setw(la_width + 7) << "";
+			}
+		}
 
 		std::cout << std::endl;
 	}
@@ -194,8 +219,8 @@ inline bool print_help(std::vector<argument>& args, options&& option) {
 	return false;
 }
 
-/* TODO: case insensitive. Default args. Equal sign. Nested? Unique args.
- * raw args. concatenate short args (ex. ls -la) */
+/* TODO: Default args. Equal sign. Nested? Unique args (asserts).
+ * raw args. No space in args (assert)*/
 inline bool parse_arguments(int argc, char** argv,
 		std::vector<argument>& args, options&& option = {}) {
 
