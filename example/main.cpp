@@ -12,14 +12,16 @@ int main(int argc, char* argv[]) {
 	};
 
 	std::vector<opt::argument> args = {
-		{"test", opt::type::no_arg, [&do_something](){ do_something = true; }, 't'}
-		, {"req", opt::type::required_arg,
-				[](std::string&& s){ printf("%s\n",s.c_str()); }}
-		, {"opt", opt::type::optional_arg,
+		{"test", opt::type::no_arg, [&do_something](){ do_something = true; }, 't',
+				"Test flag."}
+		, {"requiredarg", opt::type::required_arg,
+				[](std::string&& s){ printf("%s\n",s.c_str()); }, '\0',
+				"Some text."}
+		, {"optional", opt::type::optional_arg,
 				[](std::string&& s){ printf("%s\n",s.c_str()); }, 'o',
 				"Test desc asdf asdf alksj\n"
 				"asdffff asdf adsf dsaf  jkdsas dsfdss dfskadfsk\njf kjsdfk sa"}
-		, {"multiffffff", opt::type::multi_arg, vec_fun, 'm', "asd asfas dsf\n"
+		, {"multisdddd", opt::type::multi_arg, vec_fun, 'm', "asd asfas dsf\n"
 				"asd dfs asf d dfadsaf dsfsfsdfsfsfdsd."}
 	};
 
