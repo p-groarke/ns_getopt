@@ -78,7 +78,8 @@ inline void maybe_print_msg(const std::string& msg) {
 
 } // namespace {}
 
-enum class type {no_arg, required_arg, optional_arg, default_arg, multi_arg};
+enum class type {no_arg, required_arg, optional_arg, default_arg, multi_arg
+		, raw_arg};
 
 struct argument {
 	const std::string long_arg;
@@ -89,11 +90,13 @@ struct argument {
 	const char short_arg;
 	const std::string description;
 	const std::string default_arg;
+	const int raw_arg_pos;
 	bool parsed;
+	static size_t raw_arg_count;
 
 	argument(std::string&& long_arg
 			, type arg_type = type::no_arg
-			, std::function<void()>&& no_arg_func = [](){}
+			, const std::function<void()>& no_arg_func = [](){}
 			, char&& short_arg = '\0'
 			, std::string&& description = "")
 		: long_arg(long_arg)
@@ -101,6 +104,7 @@ struct argument {
 		, no_arg_func(no_arg_func)
 		, short_arg(short_arg)
 		, description(description)
+		, raw_arg_pos(-1)
 		, parsed(false)
 	{
 		assert(arg_type == type::no_arg &&
@@ -111,7 +115,7 @@ struct argument {
 
 	argument(std::string&& long_arg
 			, type arg_type = type::optional_arg
-			, std::function<void(std::string&&)>&& one_arg_func
+			, const std::function<void(std::string&&)>& one_arg_func
 					= [](std::string&& s){}
 			, char&& short_arg = '\0'
 			, std::string&& description = ""
@@ -122,6 +126,7 @@ struct argument {
 		, short_arg(short_arg)
 		, description(description)
 		, default_arg(default_arg)
+		, raw_arg_pos(-1)
 		, parsed(false)
 	{
 		assert(arg_type == type::required_arg
@@ -134,7 +139,7 @@ struct argument {
 
 	argument(std::string&& long_arg
 			, type arg_type = type::multi_arg
-			, std::function<void(std::vector<std::string>&&)>&&
+			, const std::function<void(std::vector<std::string>&&)>&
 					multi_arg_func = [](std::vector<std::string>&& v){}
 			, char&& short_arg = '\0'
 			, std::string&& description = "")
@@ -143,6 +148,7 @@ struct argument {
 		, multi_arg_func(multi_arg_func)
 		, short_arg(short_arg)
 		, description(description)
+		, raw_arg_pos(-1)
 		, parsed(false)
 	{
 		assert(arg_type == type::multi_arg &&
@@ -151,11 +157,29 @@ struct argument {
 		asserts();
 	}
 
+	argument(std::string&& name
+			, type arg_type = type::raw_arg
+			, const std::function<void(std::string&&)>& one_arg_func
+					= [](std::string&& s){}
+			, std::string&& description = "")
+		: long_arg(name)
+		, arg_type(arg_type)
+		, one_arg_func(one_arg_func)
+		, short_arg('\0')
+		, description(description)
+		, raw_arg_pos(raw_arg_count++)
+		, parsed(false)
+	{
+		assert(arg_type == type::raw_arg);
+		asserts();
+	}
+
 	void asserts() {
 		assert(long_arg.find(" ") == std::string::npos
 				&& "One does not simply use spaces in his arguments.");
 	}
 };
+size_t argument::raw_arg_count = 0;
 
 struct options {
 	const std::string help_intro;
@@ -177,23 +201,79 @@ struct options {
 	{}
 };
 
-inline void print_help(std::vector<argument>& args, const options& option) {
-	std::cout << option.help_intro;
-	std::cout << std::endl;
-	std::cout << "Options:" << std::endl;
+namespace {
+void print_description(const std::string& s, size_t indentation) {
+	if (s.size() == 0)
+		return;
+
+	std::istringstream iss(s);
+	std::string line;
+	std::getline(iss, line);
+	while (true) {
+		std::cout << line << std::endl;
+		if (std::getline(iss, line)) {
+			std::cout << std::setw(indentation) << "";
+		} else {
+			break;
+		}
+	}
+}
+}
+
+inline void print_help(std::vector<argument>& args, const options& option
+		, char* arg0) {
 	const size_t first_space = 1;
 	const size_t sa_width = 4;
 	const size_t sa_total_width = first_space + sa_width;
 	const size_t la_space = 2;
 	const size_t la_width_max = 30;
+	const size_t ra_space = 4;
 	const std::string opt_str = " <optional>";
 	const std::string req_str = " <value>";
 	const std::string multi_str = " <multiple>";
 	const std::string default_beg = " < =";
-	const std::string default_end = " >";
+	const std::string default_end = ">";
 
+	std::cout << option.help_intro;
+	std::cout << std::endl;
+
+	/* Usage. */
+	std::string raw_args = "";
+	for (const auto& x : args) {
+		if (x.arg_type == type::raw_arg)
+			raw_args += " " + x.long_arg;
+	}
+	std::cout << "Usage: " << arg0 << raw_args << " [options]"
+			<< std::endl << std::endl;
+
+	/* Raw args. */
+	std::cout << "Arguments:" << std::endl;
+	size_t name_width = 0;
+	for (const auto& x : args) {
+		if (x.arg_type != type::raw_arg)
+			continue;
+
+		size_t s = x.long_arg.size() + ra_space;
+		if (s > name_width)
+			name_width = s;
+	}
+
+	for (const auto& x : args) {
+		if (x.arg_type != type::raw_arg)
+			continue;
+		std::cout << std::setw(first_space) << "";
+		std::cout << std::setw(name_width) << std::left << x.long_arg;
+		print_description(x.description, first_space + name_width);
+	}
+	std::cout << std::endl;
+
+	/* Other args.*/
+	std::cout << "Options:" << std::endl;
 	size_t la_width = 0;
 	for (const auto& x : args) {
+		if (x.arg_type == type::raw_arg)
+			continue;
+
 		size_t s = 2 + x.long_arg.size() + la_space;
 		if (x.arg_type == type::optional_arg) {
 			s += opt_str.size();
@@ -205,9 +285,8 @@ inline void print_help(std::vector<argument>& args, const options& option) {
 			s += multi_str.size();
 		}
 
-		if (s > la_width) {
+		if (s > la_width)
 			la_width = s;
-		}
 	}
 
 	if (la_width > la_width_max) {
@@ -215,6 +294,9 @@ inline void print_help(std::vector<argument>& args, const options& option) {
 	}
 
 	for (const auto& x : args) {
+		if (x.arg_type == type::raw_arg)
+			continue;
+
 		std::cout << std::setw(first_space) << "";
 
 		if (x.short_arg != '\0') {
@@ -241,19 +323,7 @@ inline void print_help(std::vector<argument>& args, const options& option) {
 			std::cout << std::setw(la_width + sa_total_width) << "";
 		}
 
-		if (x.description.size() != 0) {
-			std::istringstream iss(x.description);
-			std::string line;
-			std::getline(iss, line);
-			while (true) {
-				std::cout << line << std::endl;
-				if (std::getline(iss, line)) {
-					std::cout << std::setw(la_width + sa_total_width) << "";
-				} else {
-					break;
-				}
-			}
-		}
+		print_description(x.description, la_width + sa_total_width);
 	}
 
 	std::cout << std::endl;
@@ -262,26 +332,28 @@ inline void print_help(std::vector<argument>& args, const options& option) {
 }
 
 namespace {
-bool do_exit(std::vector<argument>& args, const options& option) {
-	print_help(args, option);
+bool do_exit(std::vector<argument>& args, const options& option, char* arg0) {
+	print_help(args, option, arg0);
 	if (option.exit_on_error)
 		exit(option.exit_code);
 	return false;
 }
 }
 
-/* TODO: Equal sign. Unique args (asserts)? Raw args. */
+/* TODO: Equal sign. Unique args (asserts)? */
 inline bool parse_arguments(int argc, char** argv,
 		std::vector<argument>& args, const options& option = {}) {
 	if (argc == 1) {
-		return do_exit(args, option);
+		return do_exit(args, option, argv[0]);
 	}
+
+	size_t parsed_raw_args = 0;
 
 	for (size_t i = 1; i < argc; ++i) {
 		/* Help. */
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0
 				|| strcmp(argv[i], "/?") == 0) {
-			return do_exit(args, option);
+			return do_exit(args, option, argv[0]);
 		}
 
 		/* Check single short arg and long args. */
@@ -306,12 +378,12 @@ inline bool parse_arguments(int argc, char** argv,
 
 			if (found == -1) {
 				maybe_print_msg("'" + std::string(argv[i]) + "' not found.");
-				return do_exit(args, option);
+				return do_exit(args, option, argv[0]);
 			}
 
 			if (args[found].parsed) {
 				maybe_print_msg("'" + std::string(argv[i]) + "' already parsed.");
-				return do_exit(args, option);
+				return do_exit(args, option, argv[0]);
 			}
 
 			argument& found_arg = args[found];
@@ -327,13 +399,13 @@ inline bool parse_arguments(int argc, char** argv,
 					if (i + 1 >= argc) {
 						maybe_print_msg("'" + std::string(argv[i])
 								+ "' requires 1 argument.");
-						return do_exit(args, option);
+						return do_exit(args, option, argv[0]);
 					}
 
 					if (strncmp(argv[i + 1], "-", 1) == 0) {
 						maybe_print_msg("'" + std::string(argv[i])
 								+ "' requires 1 argument.");
-						return do_exit(args, option);
+						return do_exit(args, option, argv[0]);
 					}
 					found_arg.one_arg_func(argv[++i]);
 				} break;
@@ -393,12 +465,12 @@ inline bool parse_arguments(int argc, char** argv,
 
 			if (found_v.size() == 0) {
 				maybe_print_msg("'" + std::string(argv[i]) + "' not found.");
-				return do_exit(args, option);
+				return do_exit(args, option, argv[0]);
 			}
 
 			if (not_found.size() != 0) {
 				maybe_print_msg("'-" + not_found + "' not found.");
-				return do_exit(args, option);
+				return do_exit(args, option, argv[0]);
 			}
 
 			/* Accept duplicate flags because who cares. */
@@ -410,13 +482,13 @@ inline bool parse_arguments(int argc, char** argv,
 				if (args[x].parsed) {
 					maybe_print_msg("'" + std::string(1, args[x].short_arg)
 							+ "' already parsed.");
-					return do_exit(args, option);
+					return do_exit(args, option, argv[0]);
 				}
 
 				if (args[x].arg_type != type::no_arg) {
 					maybe_print_msg("'" + std::string(1, args[x].short_arg)
 							+ "' unsupported in concatenated short arguments.");
-					return do_exit(args, option);
+					return do_exit(args, option, argv[0]);
 				}
 			}
 
@@ -426,6 +498,23 @@ inline bool parse_arguments(int argc, char** argv,
 			}
 		}
 
+		/* Check raw args. */
+		else if (parsed_raw_args < argument::raw_arg_count) {
+			int found = -1;
+			for (size_t j = 0; j < args.size(); ++j) {
+				if (args[j].raw_arg_pos == parsed_raw_args) {
+					found = j;
+					break;
+				}
+			}
+			if (found == -1)
+				continue;
+
+			argument& found_arg = args[found];
+			found_arg.parsed = true;
+			++parsed_raw_args;
+			found_arg.one_arg_func(argv[i]);
+		}
 	}
 
 	return true;

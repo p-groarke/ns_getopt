@@ -7,6 +7,10 @@ void my_method(std::string&& arg) {
 int main(int argc, char* argv[]) {
 	bool do_something = false;
 
+	auto raw_fun = [](std::string&& s) {
+		std::cout << "Raw arg : " << s << std::endl;
+	};
+
 	auto vec_fun = [](std::vector<std::string>&& v) {
 		for (const auto& x : v) {
 			std::cout << x << std::endl;
@@ -30,12 +34,19 @@ int main(int argc, char* argv[]) {
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description."}
+		, {"in_file", opt::type::raw_arg, raw_fun,
+				"Description for file 1.\nIt can be multiple\nlines too."}
+		, {"out_file", opt::type::raw_arg, raw_fun,
+				"Description for out_file. Raw arguments are optional."}
 	};
 
-	opt::options o = {"A wonderful example.\nPhilippe Groarke\n\n"
-			"Usage: notshit_getopt [options]\n"
+	opt::options o = {"A wonderful example.\nTalented Author\n"
 			, "More info on github.\n"};
+
 	bool succeeded = opt::parse_arguments(argc, argv, args, o);
+
+	/* You can print the help whenever you desire. */
+	//opt::print_help(args, o, argv[0]);
 
 	if (!succeeded)
 		return -1;
