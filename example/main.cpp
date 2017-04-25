@@ -34,10 +34,10 @@ int main(int argc, char* argv[]) {
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description."}
-		, {"in_file", opt::type::raw_arg, raw_fun,
-				"Description for file 1.\nIt can be multiple\nlines too."}
-		, {"out_file", opt::type::raw_arg, raw_fun,
-				"Description for out_file. Raw arguments are optional."}
+//		, {"in_file", opt::type::raw_arg, raw_fun,
+//				"Description for file 1.\nIt can be multiple\nlines too."}
+//		, {"out_file", opt::type::raw_arg, raw_fun,
+//				"Description for out_file. Raw arguments are optional."}
 	};
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"

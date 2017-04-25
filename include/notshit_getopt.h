@@ -515,6 +515,12 @@ inline bool parse_arguments(int argc, char** argv,
 			++parsed_raw_args;
 			found_arg.one_arg_func(argv[i]);
 		}
+
+		/* Everything failed. */
+		else {
+			maybe_print_msg("'" + std::string(argv[i]) + "' unrecognized.");
+			return do_exit(args, option, argv[0]);
+		}
 	}
 
 	return true;
