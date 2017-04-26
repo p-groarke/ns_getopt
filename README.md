@@ -132,6 +132,9 @@ argument(std::string&& name
 
 ## opt::options
 You can provide options to the parse function, here are the available options.
+
+TODO: exit_on_error should be false by default.
+
 ```c++
 options(std::string&& help_intro = ""
 		, std::string&& help_outro = ""
