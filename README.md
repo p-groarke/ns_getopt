@@ -49,6 +49,7 @@ Call `bool parse_arguments(int argc, char** argv, std::vector<argument>& args, c
 bool succeeded = opt::parse_arguments(argc, argv, args, o);
 ```
 TODO: Show created help.
+
 That's pretty much it for a simple application. Enjoy!
 
 
@@ -137,6 +138,15 @@ options(std::string&& help_intro = ""
 		, argument&& first_argument = {"", type::no_arg, [](){}}
 		, bool exit_on_error = true
 		, int exit_code = -1)
+```
+
+## print_help
+You can print the help whenever you wish, just call void `print_help(std::vector<argument>& args, const options& option, char* arg0)` with your argument vector, your options and the first argument (required for the "Usage: ..." output).
+
+TODO: Default options!
+
+```c++
+opt::print_help(args, o, argv[0]);
 ```
 
 Because lets be honest, getopt is fucking wank.
