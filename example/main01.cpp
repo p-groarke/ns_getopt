@@ -17,8 +17,14 @@ int main(int argc, char* argv[]) {
 		}
 	};
 
+	/* Adding the std::function<...> type seems to be required on Windows (Visual Studio 2015). */
+	// std::vector<opt::argument> args = {
+	// 	{"test", opt::type::no_arg, std::function<void()>{[&do_something]() { do_something = true; }}, 't',
+	// 		"This is a simple flag."}
+	// };
+
 	std::vector<opt::argument> args = {
-		{"test", opt::type::no_arg, [&do_something](){ do_something = true; }, 't',
+		{"test", opt::type::no_arg, std::function<void()>{[&do_something]() { do_something = true; }}, 't',
 				"This is a simple flag."}
 		, {"requiredarg", opt::type::required_arg,
 				[](std::string&& s){ std::cout << s << std::endl; }, '\0',
@@ -34,8 +40,8 @@ int main(int argc, char* argv[]) {
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description."}
-//		, {"in_file", opt::type::raw_arg, raw_fun,
-//				"Description for file 1.\nIt can be multiple\nlines too."}
+		, {"in_file", opt::type::raw_arg, raw_fun,
+				"Description for file 1.\nIt can be multiple\nlines too."}
 //		, {"out_file", opt::type::raw_arg, raw_fun,
 //				"Description for out_file. Raw arguments are optional."}
 	};

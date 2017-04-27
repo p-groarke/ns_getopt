@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8.0)
+cmake_minimum_required(VERSION 3.7.0)
 set(PROJECT_NAME notshit_getopt)
 project(${PROJECT_NAME})
 
@@ -7,11 +7,20 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} INTERFACE include/)
 
-file(GLOB_RECURSE SRC "example/*.cpp" "example/*.h")
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 11)
-add_executable(${PROJECT_NAME}_example ${SRC})
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
+add_executable(${PROJECT_NAME}_example example/main01.cpp)
 target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
+
+add_executable(${PROJECT_NAME}_example2 example/main02.cpp)
+target_link_libraries(${PROJECT_NAME}_example2 ${PROJECT_NAME})
+
+add_executable(${PROJECT_NAME}_example3 example/main03.cpp)
+target_link_libraries(${PROJECT_NAME}_example3 ${PROJECT_NAME})
+
+add_executable(${PROJECT_NAME}_example4 example/main04.cpp)
+target_link_libraries(${PROJECT_NAME}_example4 ${PROJECT_NAME})
 
 # install(FILES ${SRC} DESTINATION /usr/local/include/bench_util/)
 
