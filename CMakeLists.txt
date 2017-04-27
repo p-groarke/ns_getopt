@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8.0)
+cmake_minimum_required(VERSION 3.7.0)
 set(PROJECT_NAME notshit_getopt)
 project(${PROJECT_NAME})
 
@@ -10,6 +10,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE include/)
 file(GLOB_RECURSE SRC "example/*.cpp" "example/*.h")
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 add_executable(${PROJECT_NAME}_example ${SRC})
 target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
 
