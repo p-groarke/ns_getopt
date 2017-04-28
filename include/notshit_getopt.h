@@ -43,6 +43,12 @@
 #include <cstring>
 
 #define GETOPT_DEBUG_MESSAGES 1
+#define GETOPT_DEBUG_COLOR 1
+
+#if GETOPT_DEBUG_COLOR && GETOPT_DEBUG_COLOR && defined(WIN32)
+#include <windows.h>
+#endif
+
 namespace opt {
 	namespace {
 
@@ -72,9 +78,31 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 }
 
 inline void maybe_print_msg(const std::string& msg) {
-#ifdef GETOPT_DEBUG_MESSAGES
-	std::cout << msg << std::endl;
-#endif
+#if GETOPT_DEBUG_MESSAGES
+#if GETOPT_DEBUG_COLOR
+#ifdef WIN32
+    /// @todo Not tested on Windows yet.
+    /// @todo Find how to set bold text.
+    HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+
+    // Save current attributes.
+    GetConsoleScreenBufferInfo(console_handle, &consoleInfo);
+
+    WORD saved_attributes;
+    saved_attributes = consoleInfo.wAttributes;
+
+    SetConsoleTextAttribute(console_handle, FOREGROUND_RED);
+    std::cout << "Parsing error : " << msg << std::endl;
+    // Restore original attributes.
+    SetConsoleTextAttribute(console_handle, saved_attributes);
+#else // Anything other than Windows.
+    std::cout << "\033[1;31mParsing error : " << msg << "\033[0m" << std::endl;
+#endif // WIN32
+#else // No color.
+    std::cout << "Parsing error : " << msg << std::endl;
+#endif // GETOPT_DEBUG_COLOR
+#endif // GETOPT_DEBUG_MESSAGES
 }
 
 } // namespace {}
