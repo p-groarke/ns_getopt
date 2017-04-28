@@ -41,7 +41,6 @@
 #include <cassert>
 #include <cstring>
 
-#define GETOPT_DEBUG_MESSAGES 1
 namespace opt {
 	namespace {
 
@@ -71,9 +70,7 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 }
 
 inline void maybe_print_msg(const std::string& msg) {
-#ifdef GETOPT_DEBUG_MESSAGES
 	std::cout << msg << std::endl;
-#endif
 }
 
 } // namespace {}
@@ -92,7 +89,7 @@ struct argument {
 	const std::string default_arg;
 	const int raw_arg_pos;
 	bool parsed;
-	static size_t raw_arg_count;
+	static int raw_arg_count;
 
 	argument(std::string&& long_arg
 			, type arg_type = type::no_arg
@@ -116,7 +113,7 @@ struct argument {
 	argument(std::string&& long_arg
 			, type arg_type = type::optional_arg
 			, const std::function<void(std::string&&)>& one_arg_func
-					= [](std::string&& s){}
+					= [](std::string&&){}
 			, char&& short_arg = '\0'
 			, std::string&& description = ""
 			, std::string&& default_arg = "")
@@ -140,7 +137,7 @@ struct argument {
 	argument(std::string&& long_arg
 			, type arg_type = type::multi_arg
 			, const std::function<void(std::vector<std::string>&&)>&
-					multi_arg_func = [](std::vector<std::string>&& v){}
+					multi_arg_func = [](std::vector<std::string>&&){}
 			, char&& short_arg = '\0'
 			, std::string&& description = "")
 		: long_arg(long_arg)
@@ -160,7 +157,7 @@ struct argument {
 	argument(std::string&& name
 			, type arg_type = type::raw_arg
 			, const std::function<void(std::string&&)>& one_arg_func
-					= [](std::string&& s){}
+					= [](std::string&&){}
 			, std::string&& description = "")
 		: long_arg(name)
 		, arg_type(arg_type)
@@ -179,22 +176,25 @@ struct argument {
 				&& "One does not simply use spaces in his arguments.");
 	}
 };
-size_t argument::raw_arg_count = 0;
+int argument::raw_arg_count = 0;
 
 struct options {
 	const std::string help_intro;
 	const std::string help_outro;
+	const bool error_messages;
 	const argument first_argument;
 	const bool exit_on_error;
 	const int exit_code;
 
 	options(std::string&& help_intro = ""
 			, std::string&& help_outro = ""
+			, bool error_messages = true
 			, argument&& first_argument = {"", type::no_arg, [](){}}
 			, bool exit_on_error = true
 			, int exit_code = -1)
 		: help_intro(help_intro)
 		, help_outro(help_outro)
+		, error_messages(error_messages)
 		, first_argument(first_argument)
 		, exit_on_error(exit_on_error)
 		, exit_code(exit_code)
@@ -340,16 +340,16 @@ bool do_exit(std::vector<argument>& args, const options& option, char* arg0) {
 }
 }
 
-/* TODO: Equal sign. Unique args (asserts)? */
+/* TODO: Equal sign. Unique args (asserts)? Required raw_args? */
 inline bool parse_arguments(int argc, char** argv,
 		std::vector<argument>& args, const options& option = {}) {
 	if (argc == 1) {
 		return do_exit(args, option, argv[0]);
 	}
 
-	size_t parsed_raw_args = 0;
+	int parsed_raw_args = 0;
 
-	for (size_t i = 1; i < argc; ++i) {
+	for (int i = 1; i < argc; ++i) {
 		/* Help. */
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0
 				|| strcmp(argv[i], "/?") == 0) {
@@ -359,7 +359,7 @@ inline bool parse_arguments(int argc, char** argv,
 		/* Check single short arg and long args. */
 		if ((strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) == 2)
 				|| strncmp(argv[i], "--", 2) == 0) {
-			size_t found = -1;
+			int found = -1;
 			for (size_t j = 0; j < args.size(); ++j) {
 				if (compare_no_case(argv[i], args[j].long_arg, 2)) {
 					found = j;
