@@ -91,7 +91,7 @@ struct argument {
 
 /* Configuration options. */
 struct options {
-	const argument first_argument;
+	const std::function<void(std::string&&)> first_argument_func;
 	const std::string help_intro;
 	const std::string help_outro;
 	const int exit_code;
@@ -102,8 +102,8 @@ struct options {
 	inline options(std::string&& help_intro = ""
 			, std::string&& help_outro = ""
 			, bool user_error_messages = true
-			, argument&& first_argument
-					= {"", type::required_arg, [](std::string&&){}}
+			, const std::function<void(std::string&&)>& first_argument_func
+					= [](std::string&&){}
 			, bool print_help_without_args = true
 			, bool exit_on_error = false
 			, int exit_code = -1);
@@ -200,11 +200,11 @@ inline void argument::asserts() {
 inline options::options(std::string&& help_intro
 		, std::string&& help_outro
 		, bool user_error_messages
-		, argument&& first_argument
+		, const std::function<void(std::string&&)>& first_argument_func
 		, bool print_help_without_args
 		, bool exit_on_error
 		, int exit_code)
-	: first_argument(first_argument)
+	: first_argument_func(first_argument_func)
 	, help_intro(help_intro)
 	, help_outro(help_outro)
 	, exit_code(exit_code)
@@ -232,10 +232,17 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 
 	/* Usage. */
 	std::string raw_args = "";
+	bool first = !option.print_help_without_args;
 	for (const auto& x : args) {
-		if (x.arg_type == type::raw_arg)
-			raw_args += " " + x.long_arg;
+		if (x.arg_type == type::raw_arg) {
+			raw_args += (first ? " [" : " ") + x.long_arg;
+			first = false;
+		}
 	}
+	if (!option.print_help_without_args) {
+		raw_args += "]";
+	}
+
 	std::cout << "Usage: " << arg0 << raw_args << " [options]"
 			<< std::endl << std::endl;
 
@@ -347,7 +354,7 @@ inline bool parse_arguments(int argc, char const* const* argv,
 			if (argc == 1 && option.print_help_without_args) {
 				return do_exit(args, option, argv[0]);
 			} else {
-				option.first_argument.one_arg_func(argv[i]);
+				option.first_argument_func(argv[i]);
 			}
 		}
 
