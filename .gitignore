@@ -29,5 +29,4 @@
 *.app
 
 /build*/
-/build-*/
 .DS_Store

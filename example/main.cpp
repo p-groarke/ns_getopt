@@ -1,4 +1,4 @@
-#include <modern_getopt.h>
+#include <ns_getopt.h>
 
 void my_method(std::string&& arg) {
 	std::cout << arg << std::endl;
@@ -18,22 +18,23 @@ int main(int argc, char* argv[]) {
 	};
 
 	std::vector<opt::argument> args = {
-		{"test", opt::type::no_arg, [&do_something](){ do_something = true; }, 't',
-				"This is a simple flag."}
+		{"test", opt::type::no_arg, [&do_something](){ do_something = true; },
+				"This is a simple flag.", 't'}
 		, {"requiredarg", opt::type::required_arg,
-				[](std::string&& s){ std::cout << s << std::endl; }, '\0',
-				"This argument requires a value."}
+				[](std::string&& s){ std::cout << s << std::endl; },
+				"This argument requires a value.", '\0'}
 		, {"optional", opt::type::optional_arg,
-				my_method, 'o',
-				"This parameter has an optional argument."}
+				my_method,
+				"This parameter has an optional argument.", 'o'}
 		, {"default", opt::type::default_arg,
-				my_method, 'd',
-				"An example of an argument with default value.", "my_default_val"}
-		, {"multi", opt::type::multi_arg, vec_fun, 'm',
+				my_method,
+				"An example of an argument with default value.", 'd',
+				"my_default_val"}
+		, {"multi", opt::type::multi_arg, vec_fun,
 				"This accepts multiple, space seperated, values.\n"
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
-				"your description."}
+				"your description.", 'm'}
 		, {"in_file", opt::type::raw_arg, raw_fun,
 				"Description for file 1.\nIt can be multiple\nlines too."}
 		, {"out_file", opt::type::raw_arg, raw_fun,
