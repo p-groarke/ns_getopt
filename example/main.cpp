@@ -5,7 +5,7 @@ void my_method(std::string&& arg) {
 }
 
 int main(int argc, char* argv[]) {
-	bool do_something = false;
+//	bool do_something = false;
 
 	auto raw_fun = [](std::string&& s) {
 		std::cout << "Raw arg : " << s << std::endl;
@@ -18,11 +18,18 @@ int main(int argc, char* argv[]) {
 	};
 
 	std::vector<opt::argument> args = {
-		{"test", opt::type::no_arg, [&do_something](){ do_something = true; },
+		{"test", opt::type::no_arg,
+				[](){ std::cout << "t" << std::endl; },
 				"This is a simple flag.", 't'}
+		, {"M", opt::type::no_arg,
+				[](){ std::cout << "m" << std::endl; },
+				"This is a simple flag.", 'M'}
+		, {"A", opt::type::no_arg,
+				[](){ std::cout << "a" << std::endl; },
+				"This is a simple flag.", 'a'}
 		, {"requiredarg", opt::type::required_arg,
 				[](std::string&& s){ std::cout << s << std::endl; },
-				"This argument requires a value.", '\0'}
+				"This argument requires a value."}
 		, {"optional", opt::type::optional_arg,
 				my_method,
 				"This parameter has an optional argument.", 'o'}
@@ -43,8 +50,8 @@ int main(int argc, char* argv[]) {
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"
 			, "More info on github.\n", true
-			, [](std::string&& s) { std::cout << s << std::endl; }
-			, true
+//			, [](std::string&& s) { std::cout << s << std::endl; }
+//			, true
 	};
 
 

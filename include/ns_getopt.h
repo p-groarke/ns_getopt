@@ -132,9 +132,7 @@ namespace {
 	inline void maybe_print_msg(const options& option, const std::string& msg);
 }
 
-
 /* Implementation details. */
-
 inline argument::argument(std::string&& long_arg
 		, type arg_type
 		, const std::function<void()>& no_arg_func
@@ -365,7 +363,7 @@ inline bool parse_arguments(int argc, char const* const* argv,
 		}
 
 		/* Check single short arg and long args. */
-		if ((strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) == 2)
+		else if ((strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) == 2)
 				|| strncmp(argv[i], "--", 2) == 0) {
 			int found = -1;
 			for (size_t j = 0; j < args.size(); ++j) {
