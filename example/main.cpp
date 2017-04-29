@@ -49,11 +49,9 @@ int main(int argc, char* argv[]) {
 	};
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"
-			, "More info on github.\n", true
-//			, [](std::string&& s) { std::cout << s << std::endl; }
-//			, true
+			, "More info on github.\n", opt::DEFAULT_FLAGS
+			, [](std::string&& s) { std::cout << s << std::endl; }
 	};
-
 
 	bool succeeded = opt::parse_arguments(argc, argv, args, o);
 

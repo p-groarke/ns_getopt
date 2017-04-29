@@ -89,23 +89,27 @@ struct argument {
 	inline void asserts();
 };
 
+enum flag : unsigned int {
+	USER_ERROR_MESSAGE = 1,
+	EXIT_ON_ERROR = 2,
+	PRINT_HELP_WITHOUT_ARGS = 4,
+
+	DEFAULT_FLAGS = USER_ERROR_MESSAGE | PRINT_HELP_WITHOUT_ARGS
+};
+
 /* Configuration options. */
 struct options {
 	const std::function<void(std::string&&)> first_argument_func;
 	const std::string help_intro;
 	const std::string help_outro;
 	const int exit_code;
-	const bool user_error_messages;
-	const bool exit_on_error;
-	const bool print_help_without_args;
+	const flag flags;
 
 	inline options(std::string&& help_intro = ""
 			, std::string&& help_outro = ""
-			, bool user_error_messages = true
+			, flag flags = DEFAULT_FLAGS
 			, const std::function<void(std::string&&)>& first_argument_func
 					= [](std::string&&){}
-			, bool print_help_without_args = true
-			, bool exit_on_error = false
 			, int exit_code = -1);
 };
 
@@ -130,9 +134,12 @@ namespace {
 			, const size_t lhs_start_pos = 0, const size_t rhs_start_pos = 0);
 
 	inline void maybe_print_msg(const options& option, const std::string& msg);
+
+	inline bool has_flag(const flag flags, flag flag_to_check);
 }
 
 /* Implementation details. */
+
 inline argument::argument(std::string&& long_arg
 		, type arg_type
 		, const std::function<void()>& no_arg_func
@@ -197,18 +204,14 @@ inline void argument::asserts() {
 
 inline options::options(std::string&& help_intro
 		, std::string&& help_outro
-		, bool user_error_messages
+		, flag flags
 		, const std::function<void(std::string&&)>& first_argument_func
-		, bool print_help_without_args
-		, bool exit_on_error
 		, int exit_code)
 	: first_argument_func(first_argument_func)
 	, help_intro(help_intro)
 	, help_outro(help_outro)
 	, exit_code(exit_code)
-	, user_error_messages(user_error_messages)
-	, exit_on_error(exit_on_error)
-	, print_help_without_args(print_help_without_args)
+	, flags(flags)
 {}
 
 inline void print_help(const std::vector<argument>& args, const char* arg0
@@ -228,16 +231,18 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 	std::cout << option.help_intro;
 	std::cout << std::endl;
 
+	bool print_help_without_args = has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS);
+
 	/* Usage. */
 	std::string raw_args = "";
-	bool first = !option.print_help_without_args;
+	bool first = !print_help_without_args;
 	for (const auto& x : args) {
 		if (x.arg_type == type::raw_arg) {
 			raw_args += (first ? " [" : " ") + x.long_arg;
 			first = false;
 		}
 	}
-	if (!option.print_help_without_args) {
+	if (!print_help_without_args) {
 		raw_args += "]";
 	}
 
@@ -349,7 +354,7 @@ inline bool parse_arguments(int argc, char const* const* argv,
 	for (int i = 0; i < argc; ++i) {
 		/* First argument is a special snowflake. */
 		if (i == 0) {
-			if (argc == 1 && option.print_help_without_args) {
+			if (argc == 1 && has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS)) {
 				return do_exit(args, option, argv[0]);
 			} else {
 				option.first_argument_func(argv[i]);
@@ -564,7 +569,7 @@ void print_description(const std::string& s, size_t indentation) {
 inline bool do_exit(std::vector<argument>& args, const options& option
 		, const char* arg0) {
 	print_help(args, arg0, option);
-	if (option.exit_on_error)
+	if (has_flag(option.flags, EXIT_ON_ERROR))
 		exit(option.exit_code);
 	return false;
 }
@@ -595,9 +600,13 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 }
 
 inline void maybe_print_msg(const options& option, const std::string& msg) {
-	if (!option.user_error_messages)
+	if (!has_flag(option.flags, USER_ERROR_MESSAGE))
 		return;
 	std::cout << msg << std::endl;
+}
+
+inline bool has_flag(const flag flags, flag flag_to_check) {
+	return (flags & (flag_to_check)) != 0;
 }
 
 } // namespace {}
