@@ -1,4 +1,6 @@
 # ns_getopt
+[![Build Status](https://travis-ci.org/Socapex/ns_getopt.svg?branch=master)](https://travis-ci.org/Socapex/ns_getopt)
+
 C++ argument parsing that doesn't suck.
 
 ## Philosophy
