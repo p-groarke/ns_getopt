@@ -95,6 +95,7 @@ enum flag : unsigned int {
 	, exit_on_error = 0x02
 	, arguments_are_optional = 0x04
 	, arg0_is_normal_argument = 0x10
+	, dont_print_help = 0x40
 };
 
 inline flag operator|(flag lhs, flag rhs);
@@ -342,7 +343,6 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 }
 
 /* TODO: Equal sign. Unique args (asserts)? Required raw_args?
-	nouveau flag parse first argument like a normal argument,
 	remove les trucs non-const dans argument, flag dont print help.
 
 	MAYBE: const char * in argument and everywhere */
@@ -584,8 +584,11 @@ void print_description(const std::string& s, size_t indentation) {
 
 inline bool do_exit(std::vector<argument>& args, const options& option
 		, const char* arg0) {
-	print_help(args, arg0, option);
-	if (has_flag(option.flags, exit_on_error))
+	if (!has_flag(option.flags, flag::dont_print_help)) {
+		print_help(args, arg0, option);
+	}
+
+	if (has_flag(option.flags, flag::exit_on_error))
 		exit(option.exit_code);
 	return false;
 }
