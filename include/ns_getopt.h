@@ -97,6 +97,11 @@ enum flag : unsigned int {
 	DEFAULT_FLAGS = USER_ERROR_MESSAGE | PRINT_HELP_WITHOUT_ARGS
 };
 
+inline flag operator|(flag a, flag b) {
+	return static_cast<flag>(static_cast<unsigned int>(a) |
+		static_cast<unsigned int>(b));
+}
+
 /* Configuration options. */
 struct options {
 	const std::function<void(std::string&&)> first_argument_func;
