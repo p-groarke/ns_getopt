@@ -231,9 +231,8 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 	std::cout << option.help_intro;
 	std::cout << std::endl;
 
-	bool print_help_without_args = has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS);
-
 	/* Usage. */
+	bool print_help_without_args = has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS);
 	std::string raw_args = "";
 	bool first = !print_help_without_args;
 	for (const auto& x : args) {

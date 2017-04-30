@@ -29,7 +29,6 @@
 *.app
 
 /build*/
+/cmake*/
 .DS_Store
 
-/cmake-build/
-/cmake-xcode/
