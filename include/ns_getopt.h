@@ -90,17 +90,15 @@ struct argument {
 };
 
 enum flag : unsigned int {
-	USER_ERROR_MESSAGE = 1,
-	EXIT_ON_ERROR = 2,
-	PRINT_HELP_WITHOUT_ARGS = 4,
-
-	DEFAULT_FLAGS = USER_ERROR_MESSAGE | PRINT_HELP_WITHOUT_ARGS
+	none = 0x00
+	, no_user_error_messages = 0x01
+	, exit_on_error = 0x02
+	, arguments_are_optional = 0x04
+	, arg0_is_normal_argument = 0x10
 };
 
-inline flag operator|(flag a, flag b) {
-	return static_cast<flag>(static_cast<unsigned int>(a) |
-		static_cast<unsigned int>(b));
-}
+inline flag operator|(flag lhs, flag rhs);
+inline flag& operator|=(flag& lhs, flag rhs);
 
 /* Configuration options. */
 struct options {
@@ -112,7 +110,7 @@ struct options {
 
 	inline options(std::string&& help_intro = ""
 			, std::string&& help_outro = ""
-			, flag flags = DEFAULT_FLAGS
+			, flag flags = flag::none
 			, const std::function<void(std::string&&)>& first_argument_func
 					= [](std::string&&){}
 			, int exit_code = -1);
@@ -157,7 +155,6 @@ inline argument::argument(std::string&& long_arg
 	, short_arg(short_arg)
 	, arg_type(arg_type)
 	, parsed(false)
-
 {
 	assert(arg_type == type::no_arg);
 	asserts();
@@ -237,16 +234,17 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 	std::cout << std::endl;
 
 	/* Usage. */
-	bool print_help_without_args = has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS);
+	bool arguments_are_optional = has_flag(option.flags
+			, flag::arguments_are_optional);
 	std::string raw_args = "";
-	bool first = !print_help_without_args;
+	bool first = arguments_are_optional;
 	for (const auto& x : args) {
 		if (x.arg_type == type::raw_arg) {
 			raw_args += (first ? " [" : " ") + x.long_arg;
 			first = false;
 		}
 	}
-	if (!print_help_without_args) {
+	if (arguments_are_optional) {
 		raw_args += "]";
 	}
 
@@ -343,7 +341,11 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 	std::cout << std::endl;
 }
 
-/* TODO: Equal sign. Unique args (asserts)? Required raw_args? */
+/* TODO: Equal sign. Unique args (asserts)? Required raw_args?
+	nouveau flag parse first argument like a normal argument,
+	remove les trucs non-const dans argument, flag dont print help.
+
+	MAYBE: const char * in argument and everywhere */
 inline bool parse_arguments(int argc, char const* const* argv,
 		std::vector<argument>& args, const options& option) {
 
@@ -357,8 +359,8 @@ inline bool parse_arguments(int argc, char const* const* argv,
 
 	for (int i = 0; i < argc; ++i) {
 		/* First argument is a special snowflake. */
-		if (i == 0) {
-			if (argc == 1 && has_flag(option.flags, PRINT_HELP_WITHOUT_ARGS)) {
+		if (i == 0 && !has_flag(option.flags, flag::arg0_is_normal_argument)) {
+			if (argc == 1 && !has_flag(option.flags, arguments_are_optional)) {
 				return do_exit(args, option, argv[0]);
 			} else {
 				option.first_argument_func(argv[i]);
@@ -550,6 +552,16 @@ inline bool parse_arguments(int argc, char const* const* argv,
 	return true;
 }
 
+inline flag operator|(flag lhs, flag rhs) {
+	return static_cast<flag>(static_cast<unsigned int>(lhs) |
+		static_cast<unsigned int>(rhs));
+}
+
+inline flag& operator|=(flag& lhs, flag rhs) {
+	lhs = static_cast<flag>(static_cast<unsigned int>(lhs) |
+		static_cast<unsigned int>(rhs));
+	return lhs;
+}
 
 /* Internal functions. */
 namespace {
@@ -573,7 +585,7 @@ void print_description(const std::string& s, size_t indentation) {
 inline bool do_exit(std::vector<argument>& args, const options& option
 		, const char* arg0) {
 	print_help(args, arg0, option);
-	if (has_flag(option.flags, EXIT_ON_ERROR))
+	if (has_flag(option.flags, exit_on_error))
 		exit(option.exit_code);
 	return false;
 }
@@ -604,7 +616,7 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 }
 
 inline void maybe_print_msg(const options& option, const std::string& msg) {
-	if (!has_flag(option.flags, USER_ERROR_MESSAGE))
+	if (has_flag(option.flags, no_user_error_messages))
 		return;
 	std::cout << msg << std::endl;
 }

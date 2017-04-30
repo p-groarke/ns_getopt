@@ -6,7 +6,7 @@ int main() {
 		bool k = false;
 	} tk_args;
 
-	const char* args[] = {"program_name", "-t", "-k"};
+	const char* args[] = {"-t", "-k"};
 	int args_size = sizeof(args) / sizeof(char*);
 
 	std::vector<opt::argument> opt_args = {
@@ -15,7 +15,7 @@ int main() {
 	};
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"
-		, "More info on github.\n", opt::DEFAULT_FLAGS
+		, "More info on github.\n", opt::arg0_is_normal_argument
 		, [](std::string&& s) { std::cout << s << std::endl; }
 	};
 

@@ -49,7 +49,8 @@ int main(int argc, char* argv[]) {
 	};
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"
-			, "More info on github.\n", opt::DEFAULT_FLAGS
+			, "More info on github.\n"
+			, opt::none
 			, [](std::string&& s) { std::cout << s << std::endl; }
 	};
 
