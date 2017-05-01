@@ -1,15 +1,28 @@
 cmake_minimum_required(VERSION 3.8.0)
 set(PROJECT_NAME ns_getopt)
-project(${PROJECT_NAME})
+project(${PROJECT_NAME} CXX)
 
-file(GLOB_RECURSE HEADER_FILES "include/ns_getopt.h")
+file(GLOB HEADER_FILES "include/ns_getopt.h")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} INTERFACE include/)
 
-#set(CMAKE_BUILD_TYPE Release)
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+	target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Werror)
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # using GCC
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  # using Intel C++
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	target_compile_options(${PROJECT_NAME} INTERFACE /Wall)
+
+endif()
+
+# target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wpedantic ${CMAKE_CXX_FLAGS}")
 
 add_executable(${PROJECT_NAME}_example example/main.cpp)
 target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
