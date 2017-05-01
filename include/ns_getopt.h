@@ -381,8 +381,9 @@ inline bool parse_arguments(int argc, char const* const* argv
 
 /*
  * TODO: Equal sign. Unique args (asserts)? Required raw_args?
- * remove les trucs non-const dans argument, flag dont print help.
- * MAYBE: const char * in argument and everywhere.
+ * remove non-const stuff in argument?
+ *
+ * MAYBE: const char * in argument and everywhere?
  */
 inline bool parse_arguments(int argc, char const* const* argv
 		, argument* args, size_t args_size, const options& option) {
@@ -547,7 +548,9 @@ inline bool parse_arguments(int argc, char const* const* argv
 					return do_exit(args, args_size, option, argv[0]);
 				}
 
-				if (args[x].arg_type != type::no_arg) {
+				if (!(args[x].arg_type == type::no_arg
+						|| args[x].arg_type == type::optional_arg
+						|| args[x].arg_type == type::default_arg)) {
 					maybe_print_msg(option
 							, "'" + std::string(1, args[x].short_arg)
 							+ "' unsupported in concatenated short arguments.");
@@ -556,8 +559,21 @@ inline bool parse_arguments(int argc, char const* const* argv
 			}
 
 			for (const auto& x : found_v) {
-				args[x].parsed = true;
-				args[x].no_arg_func();
+				if (args[x].arg_type == type::no_arg) {
+					args[x].parsed = true;
+					args[x].no_arg_func();
+				} else if (args[x].arg_type == type::optional_arg) {
+					args[x].parsed = true;
+					args[x].one_arg_func("");
+				} else if (args[x].arg_type == type::default_arg) {
+					args[x].parsed = true;
+					args[x].one_arg_func(std::string{args[x].default_arg});
+				} else {
+					maybe_print_msg(option
+							, "'" + std::string(1, args[x].short_arg)
+							+ "' problem parsing argument.");
+					return do_exit(args, args_size, option, argv[0]);
+				}
 			}
 		}
 
@@ -659,7 +675,7 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 inline void maybe_print_msg(const options& option, const std::string& msg) {
 	if (has_flag(option.flags, flag::no_user_error_messages))
 		return;
-	std::cout << msg << std::endl;
+	std::cout << msg << std::endl << std::endl;
 }
 
 inline bool has_flag(const flag flags, flag flag_to_check) {

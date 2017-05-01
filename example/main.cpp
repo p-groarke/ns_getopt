@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 				"This is a simple flag.", 'a'}
 		, {"requiredarg", opt::type::required_arg,
 				[](std::string&& s){ std::cout << s << std::endl; },
-				"This argument requires a value."}
+				"This argument requires a value.", 'r'}
 		, {"optional", opt::type::optional_arg,
 				my_method,
 				"This parameter has an optional argument.", 'o'}
