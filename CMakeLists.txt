@@ -7,6 +7,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} INTERFACE include/)
 
+set(CMAKE_CXX_STANDARD 11)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Werror)
 
@@ -17,16 +18,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # using Intel C++
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	target_compile_options(${PROJECT_NAME} INTERFACE /Wall)
+	target_compile_options(${PROJECT_NAME} INTERFACE /W4)
 
 endif()
-
-# target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
-set(CMAKE_CXX_STANDARD 11)
 
 add_executable(${PROJECT_NAME}_example example/main.cpp)
 target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
 
 add_executable(custom_buffer example/custom_buffer.cpp)
 target_link_libraries(custom_buffer ${PROJECT_NAME})
-

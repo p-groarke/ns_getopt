@@ -40,6 +40,7 @@
 #include <sstream>
 #include <vector>
 #include <cassert>
+#include <cctype>
 #include <cstring>
 
 namespace opt {
@@ -414,7 +415,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 		else if ((strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) == 2)
 				|| strncmp(argv[i], "--", 2) == 0) {
 			int found = -1;
-			for (size_t j = 0; j < args_size; ++j) {
+			for (int j = 0; j < args_size; ++j) {
 				if (compare_no_case(argv[i], args[j].long_arg, 2)) {
 					found = j;
 					break;
@@ -422,7 +423,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 			}
 
 			if (found == -1) {
-				for (size_t j = 0; j < args_size; ++j) {
+				for (int j = 0; j < args_size; ++j) {
 					if (argv[i][1] == args[j].short_arg) {
 						found = j;
 						break;
@@ -509,7 +510,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 			std::string not_found = "";
 			for (size_t j = 1; j < strlen(argv[i]); ++j) {
 				bool found = false;
-				for (size_t k = 0; k < args_size; ++k) {
+				for (int k = 0; k < args_size; ++k) {
 					if (argv[i][j] == args[k].short_arg) {
 						found_v.push_back(k);
 						found = true;
@@ -563,7 +564,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 		/* Check raw args. */
 		else if (parsed_raw_args < raw_args_count) {
 			int found = -1;
-			for (size_t j = 0; j < args_size; ++j) {
+			for (int j = 0; j < args_size; ++j) {
 				if (args[j].raw_arg_pos == parsed_raw_args) {
 					found = j;
 					break;
