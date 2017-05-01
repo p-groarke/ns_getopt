@@ -91,12 +91,12 @@ struct argument {
 };
 
 enum flag : unsigned int {
-	none = 0x00
-	, no_user_error_messages = 0x01
-	, exit_on_error = 0x02
-	, arguments_are_optional = 0x04
-	, arg0_is_normal_argument = 0x10
-	, dont_print_help = 0x40
+	none = 0
+	, no_user_error_messages = 1
+	, exit_on_error = 2
+	, arguments_are_optional = 4
+	, arg0_is_normal_argument = 8
+	, dont_print_help = 16
 };
 
 inline flag operator|(flag lhs, flag rhs);
@@ -121,27 +121,27 @@ struct options {
 inline void print_help(const std::vector<argument>& args, const char* arg0
 		, const options& option);
 
-template<std::size_t args_size>
+template<size_t args_size>
 inline void print_help(const argument(&args)[args_size], const char* arg0
 		, const options& option);
 
-inline void print_help(const argument* args, std::size_t args_size
+inline void print_help(const argument* args, size_t args_size
 		, const char* arg0, const options& option);
 
 inline bool parse_arguments(int argc, char const* const* argv
 		, std::vector<argument>& args, const options& option = {});
 
-template<std::size_t args_size>
+template<size_t args_size>
 inline bool parse_arguments(int argc, char const* const* argv
 		, argument(&args)[args_size], const options& option = {});
 
 inline bool parse_arguments(int argc, char const* const* argv
-		, argument* args, std::size_t args_size, const options& option = {});
+		, argument* args, size_t args_size, const options& option = {});
 
 namespace {
 	void print_description(const std::string& s, size_t indentation);
 
-	inline bool do_exit(const argument* args, std::size_t args_size
+	inline bool do_exit(const argument* args, size_t args_size
 			, const options& option, const char* arg0);
 
 	inline bool _compare_no_case(unsigned char lhs, unsigned char rhs);
@@ -237,13 +237,13 @@ inline void print_help(const std::vector<argument>& args, const char* arg0
 	print_help(args.data(), args.size(), arg0, option);
 }
 
-template<std::size_t args_size>
+template<size_t args_size>
 inline void print_help(const argument(&args)[args_size], const char* arg0
 		, const options& option) {
 	print_help(args, args_size, arg0, option);
 }
 
-inline void print_help(const argument* args, std::size_t args_size
+inline void print_help(const argument* args, size_t args_size
 		, const char* arg0, const options& option) {
 	const size_t first_space = 1;
 	const size_t sa_width = 4;
@@ -261,17 +261,17 @@ inline void print_help(const argument* args, std::size_t args_size
 	std::cout << std::endl;
 
 	/* Usage. */
-	bool arguments_are_optional = has_flag(option.flags
+	bool args_optional = has_flag(option.flags
 			, flag::arguments_are_optional);
 	std::string raw_args = "";
-	bool first = arguments_are_optional;
+	bool first = args_optional;
 	for (const argument* x = args; x < args + args_size; x++) {
 		if (x->arg_type == type::raw_arg) {
 			raw_args += (first ? " [" : " ") + x->long_arg;
 			first = false;
 		}
 	}
-	if (arguments_are_optional) {
+	if (args_optional) {
 		raw_args += "]";
 	}
 
@@ -373,7 +373,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 	return parse_arguments(argc, argv, args.data(), args.size(), option);
 }
 
-template<std::size_t args_size>
+template<size_t args_size>
 inline bool parse_arguments(int argc, char const* const* argv
 		, argument(&args)[args_size], const options& option) {
 	return parse_arguments(argc, argv, args, args_size, option);
@@ -385,7 +385,7 @@ inline bool parse_arguments(int argc, char const* const* argv
  * MAYBE: const char * in argument and everywhere.
  */
 inline bool parse_arguments(int argc, char const* const* argv
-		, argument* args, std::size_t args_size, const options& option) {
+		, argument* args, size_t args_size, const options& option) {
 
 	/* Prepare raw_args, they are parsed in declared order. */
 	int parsed_raw_args = 0;
@@ -398,7 +398,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 	for (int i = 0; i < argc; ++i) {
 		/* First argument is a special snowflake. */
 		if (i == 0 && !has_flag(option.flags, flag::arg0_is_normal_argument)) {
-			if (argc == 1 && !has_flag(option.flags, arguments_are_optional)) {
+			if (argc == 1 && !has_flag(option.flags, flag::arguments_are_optional)) {
 				return do_exit(args, args_size, option, argv[0]);
 			} else {
 				option.first_argument_func(argv[i]);
@@ -415,7 +415,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 		else if ((strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) == 2)
 				|| strncmp(argv[i], "--", 2) == 0) {
 			int found = -1;
-			for (int j = 0; j < args_size; ++j) {
+			for (int j = 0; j < (int)args_size; ++j) {
 				if (compare_no_case(argv[i], args[j].long_arg, 2)) {
 					found = j;
 					break;
@@ -423,7 +423,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 			}
 
 			if (found == -1) {
-				for (int j = 0; j < args_size; ++j) {
+				for (int j = 0; j < (int)args_size; ++j) {
 					if (argv[i][1] == args[j].short_arg) {
 						found = j;
 						break;
@@ -510,7 +510,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 			std::string not_found = "";
 			for (size_t j = 1; j < strlen(argv[i]); ++j) {
 				bool found = false;
-				for (int k = 0; k < args_size; ++k) {
+				for (int k = 0; k < (int)args_size; ++k) {
 					if (argv[i][j] == args[k].short_arg) {
 						found_v.push_back(k);
 						found = true;
@@ -564,7 +564,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 		/* Check raw args. */
 		else if (parsed_raw_args < raw_args_count) {
 			int found = -1;
-			for (int j = 0; j < args_size; ++j) {
+			for (int j = 0; j < (int)args_size; ++j) {
 				if (args[j].raw_arg_pos == parsed_raw_args) {
 					found = j;
 					break;
@@ -620,7 +620,7 @@ void print_description(const std::string& s, size_t indentation) {
 	}
 }
 
-inline bool do_exit(const argument* args, std::size_t args_size
+inline bool do_exit(const argument* args, size_t args_size
 		, const options& option , const char* arg0) {
 	if (!has_flag(option.flags, flag::dont_print_help)) {
 		print_help(args, args_size, arg0, option);
@@ -657,7 +657,7 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 }
 
 inline void maybe_print_msg(const options& option, const std::string& msg) {
-	if (has_flag(option.flags, no_user_error_messages))
+	if (has_flag(option.flags, flag::no_user_error_messages))
 		return;
 	std::cout << msg << std::endl;
 }
