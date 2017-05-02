@@ -18,7 +18,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # using Intel C++
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	target_compile_options(${PROJECT_NAME} INTERFACE /W4)
+	target_compile_options(${PROJECT_NAME} INTERFACE /W4 /WX)
 
 endif()
 
