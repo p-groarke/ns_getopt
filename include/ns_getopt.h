@@ -43,6 +43,10 @@
 #include <cctype>
 #include <cstring>
 
+#ifdef WIN32
+#include <windows.h>
+#endif // WIN32
+
 namespace opt {
 
 /* List of argument types. */
@@ -97,6 +101,7 @@ enum flag : unsigned int {
 	, arguments_are_optional = 4
 	, arg0_is_normal_argument = 8
 	, dont_print_help = 16
+	, no_color = 32
 };
 
 inline flag operator|(flag lhs, flag rhs);
@@ -675,7 +680,33 @@ inline bool compare_no_case(const std::string& lhs , const std::string& rhs
 inline void maybe_print_msg(const options& option, const std::string& msg) {
 	if (has_flag(option.flags, flag::no_user_error_messages))
 		return;
-	std::cout << msg << std::endl << std::endl;
+
+	if (has_flag(option.flags, flag::no_color)) {
+		std::cout << "Parsing error : " << msg << std::endl << std::endl;
+		return;
+	}
+
+	/* Print colors. */
+#ifdef WIN32
+	/// @todo Find how to set bold text.
+	HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+
+	/* Save current attributes. */
+	GetConsoleScreenBufferInfo(console_handle, &consoleInfo);
+
+	WORD saved_attributes;
+	saved_attributes = consoleInfo.wAttributes;
+
+	SetConsoleTextAttribute(console_handle, FOREGROUND_RED);
+	std::cout << "Parsing error : " << msg << std::endl << std::endl;
+
+	/* Restore original attributes. */
+	SetConsoleTextAttribute(console_handle, saved_attributes);
+#else // Anything other than Windows.
+	std::cout << "\033[1;31mParsing error : " << msg << "\033[0m" <<
+		std::endl << std::endl;
+#endif // WIN32
 }
 
 inline bool has_flag(const flag flags, flag flag_to_check) {
