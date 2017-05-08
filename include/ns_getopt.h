@@ -363,6 +363,9 @@ inline void print_help(const argument* args, size_t args_size
 		print_description(x->description, la_width + sa_total_width);
 	}
 
+	if (la_width == 0) // No options, width is --help only.
+		la_width = 2 + 4 + la_space;
+
 	std::cout << std::setw(first_space) << ""
 			<< std::setw(sa_width) << std::left << "-h,"
 			<< std::setw(la_width) << std::left << "--help"
