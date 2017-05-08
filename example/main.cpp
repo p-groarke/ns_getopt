@@ -7,9 +7,9 @@ void my_method(std::string&& arg) {
 int main(int argc, char* argv[]) {
 //	bool do_something = false;
 
-	auto raw_fun = [](std::string&& s) {
-		std::cout << "Raw arg : " << s << std::endl;
-	};
+//	auto raw_fun = [](std::string&& s) {
+//		std::cout << "Raw arg : " << s << std::endl;
+//	};
 
 	auto vec_fun = [](std::vector<std::string>&& v) {
 		for (const auto& x : v) {
@@ -42,10 +42,10 @@ int main(int argc, char* argv[]) {
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description.", 'm'}
-		, {"in_file", opt::type::raw_arg, raw_fun,
-				"Description for file 1.\nIt can be multiple\nlines too."}
-		, {"out_file", opt::type::raw_arg, raw_fun,
-				"Description for out_file. Raw arguments are optional."}
+//		, {"in_file", opt::type::raw_arg, raw_fun,
+//				"Description for file 1.\nIt can be multiple\nlines too."}
+//		, {"out_file", opt::type::raw_arg, raw_fun,
+//				"Description for out_file. Raw arguments are optional."}
 	};
 
 	opt::options o = {"A wonderful example.\nTalented Author\n"

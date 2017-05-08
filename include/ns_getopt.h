@@ -279,16 +279,20 @@ inline void print_help(const argument* args, size_t args_size
 			<< std::endl << std::endl;
 
 	/* Raw args. */
-	std::cout << "Arguments:" << std::endl;
+	bool has_raw_args = false;
 	size_t name_width = 0;
 	for (const argument* x = args; x < args + args_size; x++) {
 		if (x->arg_type != type::raw_arg)
 			continue;
 
+		has_raw_args = true;
 		size_t s = x->long_arg.size() + ra_space;
 		if (s > name_width)
 			name_width = s;
 	}
+
+	if (has_raw_args)
+		std::cout << "Arguments:" << std::endl;
 
 	for (const argument* x = args; x < args + args_size; x++) {
 		if (x->arg_type != type::raw_arg)
@@ -297,7 +301,8 @@ inline void print_help(const argument* args, size_t args_size
 		std::cout << std::setw(name_width) << std::left << x->long_arg;
 		print_description(x->description, first_space + name_width);
 	}
-	std::cout << std::endl;
+	if (has_raw_args)
+		std::cout << std::endl;
 
 	/* Other args.*/
 	std::cout << "Options:" << std::endl;
