@@ -29,6 +29,4 @@
 *.app
 
 /build*/
-/cmake*/
 .DS_Store
-
