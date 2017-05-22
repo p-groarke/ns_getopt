@@ -48,13 +48,13 @@ int main(int argc, char* argv[]) {
 				"Description for out_file. Raw arguments are optional."}
 	};
 
-	opt::options o = {"A wonderful example.\nTalented Author\n"
-			, "More info on github.\n"
-			, opt::none
-			, [](std::string&& s) { std::cout << s << std::endl; }
-	};
+//	opt::options o = {"A wonderful example.\nTalented Author\n"
+//			, "More info on github.\n"
+//			, opt::none
+//			, [](std::string&& s) { std::cout << s << std::endl; }
+//	};
 
-	bool succeeded = opt::parse_arguments(argc, argv, args, o);
+	bool succeeded = opt::parse_arguments(argc, argv, args);
 
 	/* You can print the help whenever you desire. */
 	//opt::print_help(args, o, argv[0]);

@@ -116,6 +116,8 @@ struct options {
 			, const std::function<void(std::string&&)>& first_argument_func
 					= [](std::string&&){}
 			, int exit_code = -1);
+
+	inline ~options() {}; // Fix clang < 4.0
 };
 
 inline void print_help(const std::vector<argument>& args, const char* arg0
@@ -139,7 +141,7 @@ inline bool parse_arguments(int argc, char const* const* argv
 		, argument* args, size_t args_size, const options& option = {});
 
 namespace {
-	void print_description(const std::string& s, size_t indentation);
+	inline void print_description(const std::string& s, size_t indentation);
 
 	inline bool do_exit(const argument* args, size_t args_size
 			, const options& option, const char* arg0);
@@ -627,7 +629,7 @@ inline flag& operator|=(flag& lhs, flag rhs) {
 
 /* Internal functions. */
 namespace {
-void print_description(const std::string& s, size_t indentation) {
+inline void print_description(const std::string& s, size_t indentation) {
 	if (s.size() == 0)
 		return;
 
