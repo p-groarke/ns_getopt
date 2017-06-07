@@ -256,7 +256,7 @@ inline void print_help(const argument* args, size_t args_size
 	const std::string opt_str = " <optional>";
 	const std::string req_str = " <value>";
 	const std::string multi_str = " <multiple>";
-	const std::string default_beg = " < =";
+	const std::string default_beg = " <=";
 	const std::string default_end = ">";
 
 	std::cout << option.help_intro;
@@ -273,7 +273,7 @@ inline void print_help(const argument* args, size_t args_size
 			first = false;
 		}
 	}
-	if (args_optional) {
+	if (args_optional && raw_args.size() > 0) {
 		raw_args += "]";
 	}
 
