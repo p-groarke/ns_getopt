@@ -391,9 +391,11 @@ inline bool parse_arguments(int argc, char const* const* argv
 
 /*
  * TODO: Equal sign. Unique args (asserts)? Required raw_args?
- * remove non-const stuff in argument?
+ * Remove non-const stuff in argument?
+ * User lambdas return bool (success).
  *
  * MAYBE: const char * in argument and everywhere?
+ *
  */
 inline bool parse_arguments(int argc, char const* const* argv
 		, argument* args, size_t args_size, const options& option) {
