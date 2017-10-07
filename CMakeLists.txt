@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.8.0)
-set(PROJECT_NAME ns_getopt)
-project(${PROJECT_NAME} CXX)
-set(NS_GETOPT_VERSION 0.0.1)
+project(ns_getopt CXX)
+set(${PROJECT_NAME}_VERSION 0.0.1)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -38,7 +37,7 @@ install(FILES ${HEADER_FILES} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ns_getopt
 
 write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
-	VERSION ${NS_GETOPT_VERSION}
+	VERSION ${${PROJECT_NAME}_VERSION}
 	COMPATIBILITY AnyNewerVersion
 )
 
@@ -70,8 +69,12 @@ install(
 
 export(PACKAGE ${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME}_example example/main.cpp)
-target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
+option(BUILD_EXAMPLES "Build accompanying examples." On)
 
-add_executable(custom_buffer example/custom_buffer.cpp)
-target_link_libraries(custom_buffer ${PROJECT_NAME})
+if (${BUILD_EXAMPLES})
+	add_executable(${PROJECT_NAME}_example example/main.cpp)
+	target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
+
+	add_executable(custom_buffer example/custom_buffer.cpp)
+	target_link_libraries(custom_buffer ${PROJECT_NAME})
+endif()
