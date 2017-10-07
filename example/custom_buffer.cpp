@@ -1,4 +1,4 @@
-#include <ns_getopt.h>
+#include <ns_getopt/ns_getopt.h>
 
 int main() {
 	struct tk {

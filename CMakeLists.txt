@@ -6,7 +6,7 @@ set(NS_GETOPT_VERSION 0.0.1)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-file(GLOB HEADER_FILES "include/ns_getopt.h")
+file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/ns_getopt/ns_getopt.h")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
