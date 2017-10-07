@@ -1,5 +1,5 @@
 # ns_getopt
-[![Build Status](https://travis-ci.org/Socapex/ns_getopt.svg?branch=master)](https://travis-ci.org/Socapex/ns_getopt)
+[![Build Status](https://travis-ci.org/p-groarke/ns_getopt.svg?branch=master)](https://travis-ci.org/p-groarke/ns_getopt)
 [![Build status](https://ci.appveyor.com/api/projects/status/gfmm381xsv0chpwg/branch/master?svg=true)](https://ci.appveyor.com/project/Socapex/ns-getopt/branch/master)
 
 C++ argument parsing that doesn't suck.
