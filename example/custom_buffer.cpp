@@ -6,20 +6,21 @@ int main() {
 		bool k = false;
 	} tk_args;
 
-	const char* args[] = {"-t", "-k"};
+	const char* args[] = { "-t", "-k" };
 	int args_size = sizeof(args) / sizeof(char*);
 
 	std::vector<opt::argument> opt_args = {
-		{"tommy", opt::type::no_arg, [&tk_args](){ tk_args.t = true; }, "Tommy Lee.", 't'},
-		{"kirk", opt::type::no_arg, [&tk_args](){ tk_args.k = true; }, "James T. Kirk.", 'k'}
+		{ "tommy", opt::type::no_arg, [&tk_args]() { tk_args.t = true; },
+				"Tommy Lee.", 't' },
+		{ "kirk", opt::type::no_arg, [&tk_args]() { tk_args.k = true; },
+				"James T. Kirk.", 'k' }
 	};
 
-	opt::options o = {"A wonderful example.\nTalented Author\n"
-		, "More info on github.\n", opt::arg0_is_normal_argument
-		, [](std::string&& s) { std::cout << s << std::endl; }
-	};
+	opt::options o = { "A wonderful example.\nTalented Author\n",
+		"More info on github.\n", opt::arg0_is_normal_argument,
+		[](std::string&& s) { std::cout << s << std::endl; } };
 
-	if(!opt::parse_arguments(args_size, args, opt_args)) {
+	if (!opt::parse_arguments(args_size, args, opt_args)) {
 		return -1;
 	}
 

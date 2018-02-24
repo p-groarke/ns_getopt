@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.8.0)
-project(ns_getopt CXX)
-set(${PROJECT_NAME}_VERSION 0.0.1)
+cmake_minimum_required(VERSION 3.10.0)
+project(ns_getopt VERSION 1.0.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -16,7 +15,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Werror)
 
@@ -73,7 +72,7 @@ export(PACKAGE ${PROJECT_NAME})
 option(BUILD_EXAMPLES "Build accompanying examples." On)
 
 if (${BUILD_EXAMPLES})
-	add_executable(${PROJECT_NAME}_example example/main.cpp)
+	add_executable(${PROJECT_NAME}_example example/ns_getopt_example.cpp)
 	target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
 
 	add_executable(custom_buffer example/custom_buffer.cpp)
