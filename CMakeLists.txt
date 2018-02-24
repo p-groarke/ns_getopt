@@ -69,6 +69,7 @@ install(
 
 export(PACKAGE ${PROJECT_NAME})
 
+# Examples
 option(BUILD_EXAMPLES "Build accompanying examples." On)
 
 if (${BUILD_EXAMPLES})
