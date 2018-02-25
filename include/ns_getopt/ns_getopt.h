@@ -524,6 +524,7 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 
 			case type::optional_arg: {
 				default_arg = "";
+				[[fallthrough]];
 			}
 			case type::default_arg: {
 				if (i + 1 >= argc) {
