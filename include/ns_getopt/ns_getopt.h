@@ -187,6 +187,7 @@ inline void maybe_print_msg(const options& option, stack_string msg);
 inline void maybe_print_msg(const options& option, std::string_view msg);
 
 inline bool has_flag(const flag flags, flag flag_to_check);
+
 } // namespace detail
 
 
@@ -736,7 +737,7 @@ inline basic_stack_string<N>& basic_stack_string<N>::operator+=(char rhs) {
 template <size_t N>
 inline basic_stack_string<N>& basic_stack_string<N>::operator+=(
 		const char* rhs) {
-	strncpy(_data + _head, rhs, _max_size - _head);
+	memcpy(_data + _head, rhs, _max_size - _head);
 	assert(_data[N - 1] == 0);
 
 	_head = (_head + strlen(rhs)) % _max_size;
