@@ -425,7 +425,7 @@ inline bool parse_arguments(int argc, char const* const* argv,
 template <size_t args_size>
 inline bool parse_arguments(int argc, char const* const* argv,
 		argument (&args)[args_size], const options& option) {
-	return parse_arguments<args_size>(argc, argv, args, option);
+	return parse_arguments<args_size>(argc, argv, (argument*)args, option);
 }
 
 /**
