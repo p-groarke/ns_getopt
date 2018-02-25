@@ -2,13 +2,15 @@
 [![Build Status](https://travis-ci.org/p-groarke/ns_getopt.svg?branch=master)](https://travis-ci.org/p-groarke/ns_getopt)
 [![Build status](https://ci.appveyor.com/api/projects/status/gfmm381xsv0chpwg/branch/master?svg=true)](https://ci.appveyor.com/project/Socapex/ns-getopt/branch/master)
 
-C++ argument parsing that doesn't suck.
+C++17 argument parsing.
 
 ## Philosophy
-ns_getopt aims to provide flexible argument parsing, with as little as possible work required from you. It supports long args, short args, raw args (ex. files), concatenated short args and multi args. Help is automatically generated and pretty. You wont have to update a `print_help()` method every time you change an argument. The code tries to minimize string copies where possible, but performance is not currently a top priority.
+ns_getopt aims to provide flexible argument parsing, with as little as possible work required from you. It supports long args, short args, raw args (ex. files), concatenated short args and multi args. Help is automatically generated and pretty. You wont have to update a `print_help()` method every time you change an argument.
+
+No allocations are created for string types. String_view and std::array are used throughout the library. std::function remains as the only construct that may allocate on the heap.
 
 ## Build and Install
-Include the .h file directly, or install through cmake (todo).
+Include the .h file directly, or install through cmake.
 
 ## Example
 ns_getopt minimizes the quantity of work you have to do when parsing arguments. The goal is to have a simple argument parsing solution up-and-runnning as fast as possible. It calls provided `std::function`s when an argument is detected. If there is an error, it will output a specific message to the user (can be disabled), print help and return false. Some behaviors can be modified if you provide a `opt::options` struct.
