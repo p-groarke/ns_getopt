@@ -41,6 +41,7 @@
 #include <string_view>
 
 namespace opt {
+
 /* Default multi argument array. */
 using multi_array = std::array<std::string_view, 8>; // TODO: Size build option.
 /* Used for stack strings (char s[N]). */
@@ -140,6 +141,7 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 		const options& option = {});
 
 namespace detail {
+
 template <size_t N = 128>
 struct basic_stack_string {
 	const char* c_str() const;
@@ -377,7 +379,6 @@ inline void print_help(const argument* args, size_t args_size, const char* arg0,
 				printf("%*s", (int)sa_width, "");
 			}
 
-			// FIXME : Stack string
 			stack_string la_str;
 			la_str += "--";
 			la_str += x->long_arg;
@@ -427,14 +428,11 @@ inline bool parse_arguments(int argc, char const* const* argv,
 	return parse_arguments<args_size>(argc, argv, args, option);
 }
 
-/*
+/**
  * TODO: Equal sign. Unique args (asserts)? Required raw_args?
  * Remove non-const stuff in argument?
  * User lambdas return bool (success).
- *
- * MAYBE: const char * in argument and everywhere?
- *
- */
+ **/
 template <size_t args_size>
 inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 		const options& option) {
@@ -606,7 +604,6 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 			std::sort(found_v.begin(), found_v.end());
 			auto last = std::unique(found_v.begin(), found_v.end());
 			found_size = last - found_v.begin();
-			//			found_v.erase(last, found_v.end());
 
 			for (size_t j = 0; j < found_size; ++j) {
 				const auto& x = found_v[j];
@@ -757,7 +754,6 @@ inline void print_description(std::string_view s, size_t indentation) {
 	}
 
 	size_t pos = 0;
-	//	size_t found_pos = std::string_view::npos;
 	for (size_t found_pos;
 			(found_pos = s.find('\n', pos)) != std::string_view::npos;) {
 		std::string_view out = s.substr(pos, found_pos - pos);
@@ -776,7 +772,7 @@ inline void print_description(std::string_view s, size_t indentation) {
 		std::string_view out = s.substr(pos, s.size() - pos);
 		printf("%.*s\n", (int)out.size(), out.data());
 	}
-} // namespace detail
+}
 
 inline bool do_exit(const argument* args, size_t args_size,
 		const options& option, const char* arg0) {
