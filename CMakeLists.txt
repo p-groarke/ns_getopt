@@ -69,7 +69,7 @@ install(
 export(PACKAGE ${PROJECT_NAME})
 
 # Examples
-option(BUILD_EXAMPLES "Build accompanying examples." On)
+option(BUILD_EXAMPLES "Build accompanying examples." Off)
 
 if (${BUILD_EXAMPLES})
 	add_executable(${PROJECT_NAME}_example examples/ns_getopt_example.cpp)
@@ -77,4 +77,12 @@ if (${BUILD_EXAMPLES})
 
 	add_executable(custom_buffer examples/custom_buffer.cpp)
 	target_link_libraries(custom_buffer ${PROJECT_NAME})
+endif()
+
+# Tests
+option(BUILD_TESTING "Build and run tests." On)
+option(TESTING_VERBOSE "Output tests on success." Off)
+if (${BUILD_TESTING})
+	enable_testing()
+	add_subdirectory(tests)
 endif()
