@@ -72,9 +72,9 @@ export(PACKAGE ${PROJECT_NAME})
 option(BUILD_EXAMPLES "Build accompanying examples." On)
 
 if (${BUILD_EXAMPLES})
-	add_executable(${PROJECT_NAME}_example example/ns_getopt_example.cpp)
+	add_executable(${PROJECT_NAME}_example examples/ns_getopt_example.cpp)
 	target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
 
-	add_executable(custom_buffer example/custom_buffer.cpp)
+	add_executable(custom_buffer examples/custom_buffer.cpp)
 	target_link_libraries(custom_buffer ${PROJECT_NAME})
 endif()
