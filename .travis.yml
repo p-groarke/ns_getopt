@@ -1,39 +1,41 @@
-language: cpp
 
+env:
+   global:
+     - CONAN_REFERENCE: "ns_getopt/1.0.0"
+     - CONAN_USERNAME: "p-groarke"
+     - CONAN_LOGIN_USERNAME: "p-groarke"
+     - CONAN_CHANNEL: "stable"
+     - CONAN_UPLOAD: "https://api.bintray.com/conan/p-groarke/conan-public"
+
+linux: &linux
+   os: linux
+   sudo: required
+   language: python
+   python: "3.6"
+   services:
+     - docker
+osx: &osx
+   os: osx
+   language: generic
 matrix:
-  include:
-    - os: osx
-      osx_image: xcode9.2
-      before_install:
-        - brew update
-        - brew upgrade cmake
-        - brew install cmake
+   include:
 
-    - os: linux
-      dist: trusty
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      before_install:
-        - eval "${MATRIX_EVAL}"
-        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-        - CMAKE_URL="https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.tar.gz"
-        - mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-        - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-        - cd ..
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=lasote/conangcc49
+
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=lasote/conangcc5
+
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=lasote/conangcc6
+
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=lasote/conangcc7
+
+install:
+  - chmod +x .travis/install.sh
+  - ./.travis/install.sh
 
 script:
-  - mkdir build && cd build && cmake .. && cmake --build .
-
-notifications:
-  email:
-    recipients:
-      - philippe.groarke@gmail.com
-    on_success: never
-    on_failure: always
+  - chmod +x .travis/run.sh
+  - ./.travis/run.sh
