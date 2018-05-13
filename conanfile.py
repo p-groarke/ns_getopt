@@ -21,13 +21,13 @@ class NsGetoptConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()#build_folder=self.build_subfolder)
+        cmake.configure()
         cmake.build()
         cmake.test()
 
     def package(self):
         cmake = CMake(self)
-        cmake.configure()#build_folder=self.build_subfolder)
+        cmake.configure()
         cmake.install()
         
     def package_info(self):
