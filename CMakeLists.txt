@@ -4,6 +4,22 @@ project(ns_getopt VERSION 1.0.0 LANGUAGES CXX)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+# Output binary to predictable location (fixes cyclic dependency issues).
+set(BINARY_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_OUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BINARY_OUT_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BINARY_OUT_DIR})
+
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+	string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BINARY_OUT_DIR})
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BINARY_OUT_DIR})
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BINARY_OUT_DIR})
+endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
+
 file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/ns_getopt/ns_getopt.h")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE
@@ -81,8 +97,11 @@ endif()
 
 # Tests
 option(BUILD_TESTING "Build and run tests." On)
-option(TESTING_VERBOSE "Output tests on success." Off)
 if (${BUILD_TESTING})
 	enable_testing()
-	add_subdirectory(tests)
+	file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp" "tests/*.c" "tests/*.hpp" "tests/*.h" "tests/*.tpp")
+	add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
+	target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} CONAN_PKG::catch2)
+	add_test(NAME tests COMMAND ${PROJECT_NAME}_tests)
+	add_dependencies(${PROJECT_NAME}_tests ${PROJECT_NAME})
 endif()
