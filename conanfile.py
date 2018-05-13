@@ -5,7 +5,7 @@ from conans import ConanFile, CMake, tools
 import os
 
 
-class GladConan(ConanFile):
+class NsGetoptConan(ConanFile):
     name = "ns_getopt"
     version = "1.0.0"
     description = "Modern C++ argument parsing."
