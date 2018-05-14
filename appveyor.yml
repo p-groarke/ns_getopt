@@ -12,6 +12,7 @@ environment:
     CONAN_LOGIN_USERNAME: "p-groarke"
     CONAN_CHANNEL: "stable"
     CONAN_UPLOAD: "https://api.bintray.com/conan/p-groarke/conan-public"
+    CONAN_PASSWORD: $(CONAN_PASSWORD)
 
     matrix:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
