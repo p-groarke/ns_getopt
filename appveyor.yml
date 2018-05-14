@@ -1,4 +1,6 @@
 build: false
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 environment:
     PYTHON: "C:\\Python27"
@@ -14,6 +16,10 @@ environment:
     matrix:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
           CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Release
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+          CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Debug
 
 
 install:
