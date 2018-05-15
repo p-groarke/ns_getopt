@@ -14,7 +14,7 @@ environment:
     CONAN_UPLOAD: "https://api.bintray.com/conan/p-groarke/conan-public"
     CONAN_PASSWORD:
         secure: O+D/9uKIc8gU8yEvFug06FWBXkdy2wrqFTPR+K/utYEPc4KquI/3DXo2kiFFJ5OB
-    ENABLE_TESTING: "On"
+    BUILD_TESTING: "On"
 
     matrix:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017

@@ -21,7 +21,7 @@ osx: &osx
 matrix:
    include:
       - <<: *linux
-        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=lasote/conangcc7 ENABLE_TESTING=On
+        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=lasote/conangcc7 BUILD_TESTING=On
 
       - <<: *osx
         osx_image: xcode9
