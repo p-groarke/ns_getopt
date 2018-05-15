@@ -17,9 +17,6 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BINARY_OUT_DIR})
 endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
 file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/ns_getopt/ns_getopt.h")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE
@@ -96,9 +93,12 @@ if (${BUILD_EXAMPLES})
 endif()
 
 # Tests
-option(BUILD_TESTING "Build and run tests." On)
+option(BUILD_TESTING "Build and run tests." Off)
 if (${BUILD_TESTING})
 	enable_testing()
+	
+	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	conan_basic_setup(TARGETS)
 	file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp" "tests/*.c" "tests/*.hpp" "tests/*.h" "tests/*.tpp")
 	add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
 	target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} CONAN_PKG::catch2)
