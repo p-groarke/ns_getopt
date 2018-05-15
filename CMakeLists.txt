@@ -36,7 +36,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Werror)
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  # using Intel C++
+	# using Intel C++
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	target_compile_options(${PROJECT_NAME} INTERFACE /W4 /WX)
@@ -51,7 +51,7 @@ write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
 	VERSION ${${PROJECT_NAME}_VERSION}
 	COMPATIBILITY AnyNewerVersion
-)
+	)
 
 configure_package_config_file(
 	cmake/ns_getoptConfig.cmake.in
@@ -59,25 +59,25 @@ configure_package_config_file(
 	INSTALL_DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
 	PATH_VARS CMAKE_INSTALL_INCLUDEDIR
 	NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
+	)
 
 install(
 	FILES
-		"${CMAKE_CURRENT_BINARY_DIR}/${NS_GETOPT_INSTALL_CONFIGDIR}/ns_getoptConfig.cmake"
-		"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/${NS_GETOPT_INSTALL_CONFIGDIR}/ns_getoptConfig.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
 	DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
-)
+	)
 
 install(TARGETS ${PROJECT_NAME} EXPORT ns_getoptTargets)
 
 export(EXPORT ns_getoptTargets
 	FILE "${CMAKE_CURRENT_BINARY_DIR}/ns_getoptTargets.cmake"
-)
+	)
 
 install(
 	EXPORT ns_getoptTargets FILE ns_getoptTargets.cmake
 	DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
-)
+	)
 
 export(PACKAGE ${PROJECT_NAME})
 
@@ -97,8 +97,13 @@ option(BUILD_TESTING "Build and run tests." Off)
 if (${BUILD_TESTING})
 	enable_testing()
 	
-	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo_multi.cmake)
+		include(${CMAKE_BINARY_DIR}/conanbuildinfo_multi.cmake)
+	else()
+		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	endif()
 	conan_basic_setup(TARGETS)
+	
 	file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp" "tests/*.c" "tests/*.hpp" "tests/*.h" "tests/*.tpp")
 	add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
 	target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} CONAN_PKG::catch2)

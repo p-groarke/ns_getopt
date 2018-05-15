@@ -18,12 +18,16 @@ class NsGetoptConan(ConanFile):
     # build_subfolder = "build_subfolder"
     settings = "os", "arch", "compiler", "build_type"
     requires = "catch2/2.2.2@bincrafters/stable"
+    options = {"build_testing": [True, False]}
+    default_options = ("build_testing=False")
 
     def build(self):
         cmake = CMake(self)
+        cmake.definitions["BUILD_TESTING"] = self.options.build_testing
         cmake.configure()
         cmake.build()
-        cmake.test()
+        if self.options.build_testing:
+            cmake.test()
 
     def package(self):
         cmake = CMake(self)
