@@ -10,8 +10,9 @@ void* operator new(std::size_t count) {
 
 #include <ns_getopt/ns_getopt.h>
 
-void my_function(std::string_view s) {
+bool my_function(std::string_view s) {
 	printf("%.*s\n", (int)s.size(), s.data());
+	return true;
 }
 
 int main(int argc, char* argv[]) {
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
 	//	int test[42] = {};
 	auto raw_fun = [/*test*/](std::string_view s) {
 		printf("Raw args : %.*s\n", (int)s.size(), s.data());
+		return true;
 		//		printf("%d\n", test[5]);
 	};
 
@@ -34,19 +36,33 @@ int main(int argc, char* argv[]) {
 		for (size_t i = 0; i < len; ++i) {
 			printf("%.*s\n", (int)a[i].size(), a[i].data());
 		}
+		return true;
 	};
 
 
 	std::array<opt::argument, 9> args = { { // clang-format
-			{ "test", opt::type::no_arg, []() { printf("t\n"); },
+			{ "test", opt::type::no_arg,
+					[]() {
+						printf("t\n");
+						return true;
+					},
 					"This is a simple flag.", 't' },
-			{ "M", opt::type::no_arg, []() { printf("m\n"); },
+			{ "M", opt::type::no_arg,
+					[]() {
+						printf("m\n");
+						return true;
+					},
 					"This is a simple flag.", 'M' },
-			{ "A", opt::type::no_arg, []() { printf("a\n"); },
+			{ "A", opt::type::no_arg,
+					[]() {
+						printf("a\n");
+						return true;
+					},
 					"This is a simple flag.", 'a' },
 			{ "requiredarg_with_long_name", opt::type::required_arg,
 					[](std::string_view s) {
 						printf("%.*s\n", (int)s.size(), s.data());
+						return true;
 					},
 					"This argument requires a value.", 'r' },
 			{ "optional", opt::type::optional_arg, my_function,
@@ -67,8 +83,10 @@ int main(int argc, char* argv[]) {
 					"optional.\n" } } };
 
 	opt::options o = { "A wonderful example.\nTalented Author",
-		"More info on github.", opt::none,
-		[](std::string_view s) { printf("%.*s\n", (int)s.size(), s.data()); } };
+		"More info on github.", opt::none, [](std::string_view s) {
+			printf("%.*s\n", (int)s.size(), s.data());
+			return true;
+		} };
 
 	/* You can print the help whenever you desire. */
 	//	opt::print_help(args, o, argv[0]);

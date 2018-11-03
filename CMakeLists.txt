@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(ns_getopt VERSION 1.0.0 LANGUAGES CXX)
+project(ns_getopt VERSION 2.0.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+
+# Organize unrelated targets to clean IDE hierarchy.
+set(DEPENDENCY_FOLDER "Dependencies")
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DEPENDENCY_FOLDER})
 
 # Output binary to predictable location (fixes cyclic dependency issues).
 set(BINARY_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -85,8 +90,9 @@ export(PACKAGE ${PROJECT_NAME})
 option(BUILD_EXAMPLES "Build accompanying examples." Off)
 
 if (${BUILD_EXAMPLES})
-	add_executable(${PROJECT_NAME}_example examples/ns_getopt_example.cpp)
-	target_link_libraries(${PROJECT_NAME}_example ${PROJECT_NAME})
+	set(EXAMPLES_NAME ${PROJECT_NAME}_examples)
+	add_executable(${EXAMPLES_NAME} examples/ns_getopt_example.cpp)
+	target_link_libraries(${EXAMPLES_NAME} ${PROJECT_NAME})
 
 	add_executable(custom_buffer examples/custom_buffer.cpp)
 	target_link_libraries(custom_buffer ${PROJECT_NAME})
@@ -104,9 +110,11 @@ if (${BUILD_TESTING})
 	endif()
 	conan_basic_setup(TARGETS)
 	
+	set(TEST_NAME ${PROJECT_NAME}_tests)
 	file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp" "tests/*.c" "tests/*.hpp" "tests/*.h" "tests/*.tpp")
-	add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
-	target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} CONAN_PKG::catch2)
-	add_test(NAME tests COMMAND ${PROJECT_NAME}_tests)
-	add_dependencies(${PROJECT_NAME}_tests ${PROJECT_NAME})
+	add_executable(${TEST_NAME} ${TEST_SOURCES})
+	target_link_libraries(${TEST_NAME} PRIVATE ${PROJECT_NAME} CONAN_PKG::catch2)
+	add_test(NAME tests COMMAND ${TEST_NAME})
+	add_dependencies(${TEST_NAME} ${PROJECT_NAME})
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TEST_NAME})
 endif()

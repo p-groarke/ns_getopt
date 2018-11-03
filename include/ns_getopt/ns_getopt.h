@@ -59,9 +59,9 @@ enum class type : std::uint8_t {
 
 /* User argument. */
 struct argument {
-	const std::function<void()> no_arg_func;
-	const std::function<void(std::string_view)> one_arg_func;
-	const std::function<void(multi_array&&, size_t)> multi_arg_func;
+	const std::function<bool()> no_arg_func;
+	const std::function<bool(std::string_view)> one_arg_func;
+	const std::function<bool(multi_array&&, size_t)> multi_arg_func;
 	const std::string_view long_arg;
 	const std::string_view description;
 	const std::string_view default_arg;
@@ -72,16 +72,16 @@ struct argument {
 	bool parsed;
 
 	inline argument(std::string_view long_arg, type arg_type,
-			const std::function<void()>& no_arg_func,
+			const std::function<bool()>& no_arg_func,
 			std::string_view description = "", char&& short_arg = '\0');
 
 	inline argument(std::string_view long_arg, type arg_type,
-			const std::function<void(std::string_view)>& one_arg_func,
+			const std::function<bool(std::string_view)>& one_arg_func,
 			std::string_view description = "", char&& short_arg = '\0',
 			std::string_view default_arg = "");
 
 	inline argument(std::string_view long_arg, type arg_type,
-			const std::function<void(multi_array&&, size_t)>&,
+			const std::function<bool(multi_array&&, size_t)>&,
 			size_t multi_max_subargs, std::string_view description = "",
 			char&& short_arg = '\0');
 
@@ -102,7 +102,7 @@ inline flag& operator|=(flag& lhs, flag rhs);
 
 /* Configuration options. */
 struct options {
-	const std::function<void(std::string_view)> first_argument_func;
+	const std::function<bool(std::string_view)> first_argument_func;
 	const std::string_view help_intro;
 	const std::string_view help_outro;
 	const int exit_code;
@@ -110,8 +110,8 @@ struct options {
 
 	inline options(std::string_view help_intro = "",
 			std::string_view help_outro = "", flag flags = flag::none,
-			const std::function<void(std::string_view)>& first_argument_func
-			= [](std::string_view) {},
+			const std::function<bool(std::string_view)>& first_argument_func
+			= [](std::string_view) { return true; },
 			int exit_code = -1);
 
 	inline ~options(){}; // Fix clang < 4.0
@@ -195,7 +195,7 @@ inline bool has_flag(const flag flags, flag flag_to_check);
 
 /* Implementation. */
 inline argument::argument(std::string_view long_arg, type arg_type,
-		const std::function<void()>& no_arg_func, std::string_view description,
+		const std::function<bool()>& no_arg_func, std::string_view description,
 		char&& short_arg)
 		: no_arg_func(no_arg_func)
 		, long_arg(long_arg)
@@ -210,7 +210,7 @@ inline argument::argument(std::string_view long_arg, type arg_type,
 }
 
 inline argument::argument(std::string_view long_arg, type arg_type,
-		const std::function<void(std::string_view)>& one_arg_func,
+		const std::function<bool(std::string_view)>& one_arg_func,
 		std::string_view description, char&& short_arg,
 		std::string_view default_arg)
 		: one_arg_func(one_arg_func)
@@ -228,7 +228,7 @@ inline argument::argument(std::string_view long_arg, type arg_type,
 }
 
 inline argument::argument(std::string_view long_arg, type arg_type,
-		const std::function<void(multi_array&&, size_t)>& multi_arg_func,
+		const std::function<bool(multi_array&&, size_t)>& multi_arg_func,
 		size_t multi_max_subargs, std::string_view description,
 		char&& short_arg)
 		: multi_arg_func(multi_arg_func)
@@ -250,7 +250,7 @@ inline void argument::asserts() {
 
 inline options::options(std::string_view help_intro,
 		std::string_view help_outro, flag flags,
-		const std::function<void(std::string_view)>& first_argument_func,
+		const std::function<bool(std::string_view)>& first_argument_func,
 		int exit_code)
 		: first_argument_func(first_argument_func)
 		, help_intro(help_intro)
@@ -501,7 +501,11 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 
 			switch (found_arg.arg_type) {
 			case type::no_arg: {
-				found_arg.no_arg_func();
+				if (!found_arg.no_arg_func()) {
+					maybe_print_msg(option,
+							make_stack_string("problem parsing option."));
+					return do_exit(args, args_size, option, argv[0]);
+				}
 			} break;
 
 			case type::required_arg: {
@@ -518,7 +522,12 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 									"'", argv[i], "' requires 1 argument."));
 					return do_exit(args, args_size, option, argv[0]);
 				}
-				found_arg.one_arg_func(argv[++i]);
+				if (!found_arg.one_arg_func(argv[++i])) {
+					maybe_print_msg(option,
+							make_stack_string("'", argv[i - 1],
+									"' problem parsing argument."));
+					return do_exit(args, args_size, option, argv[0]);
+				}
 			} break;
 
 			case type::optional_arg: {
@@ -527,15 +536,28 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 			}
 			case type::default_arg: {
 				if (i + 1 >= argc) {
-					found_arg.one_arg_func(std::move(default_arg));
+					if (!found_arg.one_arg_func(std::move(default_arg))) {
+						maybe_print_msg(option,
+								make_stack_string("problem parsing option."));
+						return do_exit(args, args_size, option, argv[0]);
+					}
 					break;
 				}
 
 				if (strncmp(argv[i + 1], "-", 1) == 0) {
-					found_arg.one_arg_func(std::move(default_arg));
+					if (!found_arg.one_arg_func(std::move(default_arg))) {
+						maybe_print_msg(option,
+								make_stack_string("problem parsing option."));
+						return do_exit(args, args_size, option, argv[0]);
+					}
 					break;
 				}
-				found_arg.one_arg_func(argv[++i]);
+
+				if (!found_arg.one_arg_func(argv[++i])) {
+					maybe_print_msg(option,
+							make_stack_string("problem parsing option."));
+					return do_exit(args, args_size, option, argv[0]);
+				}
 			} break;
 
 			case type::multi_arg: {
@@ -560,10 +582,21 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 						return do_exit(args, args_size, option, argv[0]);
 					}
 				}
-				found_arg.multi_arg_func(std::move(a), current_multi_arg);
+				if (!found_arg.multi_arg_func(
+							std::move(a), current_multi_arg)) {
+					maybe_print_msg(option,
+							make_stack_string(
+									"problem parsing multi-arguments."));
+					return do_exit(args, args_size, option, argv[0]);
+				}
 			} break;
 
-			default: { assert(false && "Something went horribly wrong."); };
+			default: {
+				// assert(false && "Something went horribly wrong.");
+				maybe_print_msg(
+						option, make_stack_string("problem parsing options."));
+				return do_exit(args, args_size, option, argv[0]);
+			};
 			}
 		}
 
@@ -630,13 +663,28 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 				const auto& x = found_v[j];
 				if (args[x].arg_type == type::no_arg) {
 					args[x].parsed = true;
-					args[x].no_arg_func();
+					if (!args[x].no_arg_func()) {
+						maybe_print_msg(option,
+								make_stack_string("'", args[x].short_arg,
+										"' problem parsing option."));
+						return do_exit(args, args_size, option, argv[0]);
+					}
 				} else if (args[x].arg_type == type::optional_arg) {
 					args[x].parsed = true;
-					args[x].one_arg_func("");
+					if (!args[x].one_arg_func("")) {
+						maybe_print_msg(option,
+								make_stack_string("'", args[x].short_arg,
+										"' problem parsing argument."));
+						return do_exit(args, args_size, option, argv[0]);
+					}
 				} else if (args[x].arg_type == type::default_arg) {
 					args[x].parsed = true;
-					args[x].one_arg_func(args[x].default_arg);
+					if (!args[x].one_arg_func(args[x].default_arg)) {
+						maybe_print_msg(option,
+								make_stack_string("'", args[x].short_arg,
+										"' problem parsing argument."));
+						return do_exit(args, args_size, option, argv[0]);
+					}
 				} else {
 					maybe_print_msg(option,
 							make_stack_string("'", args[x].short_arg,
@@ -661,7 +709,12 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 			argument& found_arg = args[found];
 			found_arg.parsed = true;
 			++parsed_raw_args;
-			found_arg.one_arg_func(argv[i]);
+			if (!found_arg.one_arg_func(argv[i])) {
+				maybe_print_msg(option,
+						make_stack_string(
+								"'", argv[i], "' problem parsing argument."));
+				return do_exit(args, args_size, option, argv[0]);
+			}
 		}
 
 		/* Everything failed. */
@@ -816,7 +869,7 @@ inline void maybe_print_msg(const options& option, stack_string msg) {
 inline void maybe_print_msg(const options& option, std::string_view msg) {
 	if (has_flag(option.flags, flag::no_user_error_messages))
 		return;
-	printf("%.*s\n\n", (int)msg.size(), msg.data());
+	printf("%.*s\n", (int)msg.size(), msg.data());
 }
 
 inline bool has_flag(const flag flags, flag flag_to_check) {

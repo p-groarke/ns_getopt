@@ -3,14 +3,16 @@
 
 #include <ns_getopt/ns_getopt.h>
 
-void my_function(std::string_view s) {
+bool my_function(std::string_view s) {
 	printf("%.*s\n", (int)s.size(), s.data());
+	return true;
 }
 
 TEST_CASE("Argument detection", "[parsing]") {
 
 	auto raw_fun = [](std::string_view s) {
 		printf("Raw args : %.*s\n", (int)s.size(), s.data());
+		return true;
 	};
 
 	auto multi_fun = [](opt::multi_array&& a, size_t len) {
@@ -19,18 +21,32 @@ TEST_CASE("Argument detection", "[parsing]") {
 			printf("%.*s ", (int)a[i].size(), a[i].data());
 		}
 		printf("\n");
+		return true;
 	};
 
 	opt::argument args_c_array[] = { // clang-format
-		{ "test", opt::type::no_arg, []() { printf("No arg : t\n"); },
+		{ "test", opt::type::no_arg,
+				[]() {
+					printf("No arg : t\n");
+					return true;
+				},
 				"This is a simple flag.", 't' },
-		{ "M", opt::type::no_arg, []() { printf("No arg : m\n"); },
+		{ "M", opt::type::no_arg,
+				[]() {
+					printf("No arg : m\n");
+					return true;
+				},
 				"This is a simple flag.", 'M' },
-		{ "A", opt::type::no_arg, []() { printf("No arg : a\n"); },
+		{ "A", opt::type::no_arg,
+				[]() {
+					printf("No arg : a\n");
+					return true;
+				},
 				"This is a simple flag.", 'a' },
 		{ "requiredarg_with_long_name", opt::type::required_arg,
 				[](std::string_view s) {
 					printf("Required : %.*s\n", (int)s.size(), s.data());
+					return true;
 				},
 				"This argument requires a value.", 'r' },
 		{ "optional", opt::type::optional_arg, my_function,
@@ -53,15 +69,28 @@ TEST_CASE("Argument detection", "[parsing]") {
 	constexpr size_t args_size = sizeof(args_c_array) / sizeof(opt::argument);
 
 	std::array<opt::argument, args_size> args_array = { { // clang-format
-			{ "test", opt::type::no_arg, []() { printf("No arg : t\n"); },
+			{ "test", opt::type::no_arg,
+					[]() {
+						printf("No arg : t\n");
+						return true;
+					},
 					"This is a simple flag.", 't' },
-			{ "M", opt::type::no_arg, []() { printf("No arg : m\n"); },
+			{ "M", opt::type::no_arg,
+					[]() {
+						printf("No arg : m\n");
+						return true;
+					},
 					"This is a simple flag.", 'M' },
-			{ "A", opt::type::no_arg, []() { printf("No arg : a\n"); },
+			{ "A", opt::type::no_arg,
+					[]() {
+						printf("No arg : a\n");
+						return true;
+					},
 					"This is a simple flag.", 'a' },
 			{ "requiredarg_with_long_name", opt::type::required_arg,
 					[](std::string_view s) {
 						printf("Required : %.*s\n", (int)s.size(), s.data());
+						return true;
 					},
 					"This argument requires a value.", 'r' },
 			{ "optional", opt::type::optional_arg, my_function,
@@ -82,15 +111,28 @@ TEST_CASE("Argument detection", "[parsing]") {
 					"optional.\n" } } };
 
 	opt::argument* args_heap_array = new opt::argument[args_size]{
-		{ "test", opt::type::no_arg, []() { printf("No arg : t\n"); },
+		{ "test", opt::type::no_arg,
+				[]() {
+					printf("No arg : t\n");
+					return true;
+				},
 				"This is a simple flag.", 't' },
-		{ "M", opt::type::no_arg, []() { printf("No arg : m\n"); },
+		{ "M", opt::type::no_arg,
+				[]() {
+					printf("No arg : m\n");
+					return true;
+				},
 				"This is a simple flag.", 'M' },
-		{ "A", opt::type::no_arg, []() { printf("No arg : a\n"); },
+		{ "A", opt::type::no_arg,
+				[]() {
+					printf("No arg : a\n");
+					return true;
+				},
 				"This is a simple flag.", 'a' },
 		{ "requiredarg_with_long_name", opt::type::required_arg,
 				[](std::string_view s) {
 					printf("Required : %.*s\n", (int)s.size(), s.data());
+					return true;
 				},
 				"This argument requires a value.", 'r' },
 		{ "optional", opt::type::optional_arg, my_function,
@@ -122,6 +164,7 @@ TEST_CASE("Argument detection", "[parsing]") {
 
 	opt::options o = { "intro", "outro", opt::none, [](std::string_view s) {
 						  printf("\n%.*s\n", (int)s.size(), s.data());
+						  return true;
 					  } };
 
 	SECTION("no input should fail") {
@@ -415,5 +458,57 @@ TEST_CASE("Argument detection", "[parsing]") {
 	}
 }
 
-TEST_CASE("Argument forwarding", "[parsing]") {
+TEST_CASE("User failure", "[parsing]") {
+	printf("\n\n\n");
+	std::array<opt::argument, 5> args_array = { {
+			{ "test", opt::type::no_arg, []() { return false; },
+					"Always fails.", 't' },
+			{ "test2", opt::type::default_arg,
+					[](std::string_view) { return false; }, "Always fails.",
+					'd', "defaultval" },
+			{ "test3", opt::type::required_arg,
+					[](std::string_view) { return false; }, "Always fails." },
+			{ "test4", opt::type::multi_arg,
+					[](opt::multi_array&&, size_t) { return false; }, 2,
+					"Always fails." },
+			{ "test5", opt::type::raw_arg,
+					[](std::string_view) { return false; }, "Always fails." },
+	} };
+
+	SECTION("all types") {
+		{
+			const char* argv[] = { "./exec", "--test" };
+			const size_t argc = sizeof(argv) / sizeof(char*);
+			bool succeeded = opt::parse_arguments(argc, argv, args_array);
+			REQUIRE(succeeded == false);
+		}
+		{
+			const char* argv[] = { "./exec", "--test2" };
+			const size_t argc = sizeof(argv) / sizeof(char*);
+			bool succeeded = opt::parse_arguments(argc, argv, args_array);
+			REQUIRE(succeeded == false);
+		}
+		{
+			const char* argv[] = {
+				"./exec",
+				"--test3",
+				"a",
+			};
+			const size_t argc = sizeof(argv) / sizeof(char*);
+			bool succeeded = opt::parse_arguments(argc, argv, args_array);
+			REQUIRE(succeeded == false);
+		}
+		{
+			const char* argv[] = { "./exec", "--test4", "4", "5" };
+			const size_t argc = sizeof(argv) / sizeof(char*);
+			bool succeeded = opt::parse_arguments(argc, argv, args_array);
+			REQUIRE(succeeded == false);
+		}
+		{
+			const char* argv[] = { "./exec", "raw" };
+			const size_t argc = sizeof(argv) / sizeof(char*);
+			bool succeeded = opt::parse_arguments(argc, argv, args_array);
+			REQUIRE(succeeded == false);
+		}
+	}
 }

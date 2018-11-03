@@ -11,14 +11,25 @@ int main() {
 	int args_size = sizeof(args) / sizeof(char*);
 
 	std::array<opt::argument, 2> opt_args = { { // clang-format
-			{ "tommy", opt::type::no_arg, [&tk_args]() { tk_args.t = true; },
+			{ "tommy", opt::type::no_arg,
+					[&tk_args]() {
+						tk_args.t = true;
+						return true;
+					},
 					"Tommy Lee.", 't' },
-			{ "kirk", opt::type::no_arg, [&tk_args]() { tk_args.k = true; },
+			{ "kirk", opt::type::no_arg,
+					[&tk_args]() {
+						tk_args.k = true;
+						return true;
+					},
 					"James T. Kirk.", 'k' } } };
 
 	opt::options o = { "A wonderful example.\nTalented Author\n",
 		"More info on github.\n", opt::arg0_is_normal_argument,
-		[](std::string_view s) { std::cout << s << std::endl; } };
+		[](std::string_view s) {
+			std::cout << s << std::endl;
+			return true;
+		} };
 
 	if (!opt::parse_arguments(args_size, args, opt_args)) {
 		return -1;
