@@ -108,8 +108,9 @@ struct options {
 	const int exit_code;
 	const flag flags;
 
-	inline options(std::string_view help_intro = "",
-			std::string_view help_outro = "", flag flags = flag::none,
+	inline options(
+			std::string_view help_intro = "", std::string_view help_outro = "",
+			flag flags = flag::none,
 			const std::function<bool(std::string_view)>& first_argument_func
 			= [](std::string_view) { return true; },
 			int exit_code = -1);
@@ -602,7 +603,8 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 
 		/* Concatenated short args. */
 		else if (strncmp(argv[i], "-", 1) == 0 && strlen(argv[i]) > 2) {
-			std::array<int, args_size> found_v = {};
+			std::array<int, args_size> found_v;
+			found_v.fill(args_size + 1);
 			size_t found_size = 0;
 			stack_string not_found;
 			for (size_t j = 1; j < strlen(argv[i]); ++j) {
@@ -636,7 +638,7 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 			/* Accept duplicate flags because who cares. */
 			std::sort(found_v.begin(), found_v.end());
 			auto last = std::unique(found_v.begin(), found_v.end());
-			found_size = last - found_v.begin();
+			found_size = last - found_v.begin() - 1;
 
 			for (size_t j = 0; j < found_size; ++j) {
 				const auto& x = found_v[j];
