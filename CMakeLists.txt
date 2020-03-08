@@ -1,3 +1,4 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.conan.txt)
 cmake_minimum_required(VERSION 3.10.0)
 project(ns_getopt VERSION 2.0.0 LANGUAGES CXX)
 
@@ -48,43 +49,17 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
 endif()
 
+
 # Install Package Configuration
-set(NS_GETOPT_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/ns_getopt")
-install(FILES ${HEADER_FILES} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ns_getopt")
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}_targets)
 
-write_basic_package_version_file(
-	"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
-	VERSION ${${PROJECT_NAME}_VERSION}
-	COMPATIBILITY AnyNewerVersion
-	)
+install(EXPORT ${PROJECT_NAME}_targets
+	NAMESPACE ${PROJECT_NAME}::
+	FILE ${PROJECT_NAME}-config.cmake
+	DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+)
 
-configure_package_config_file(
-	cmake/ns_getoptConfig.cmake.in
-	${NS_GETOPT_INSTALL_CONFIGDIR}/ns_getoptConfig.cmake
-	INSTALL_DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
-	PATH_VARS CMAKE_INSTALL_INCLUDEDIR
-	NO_CHECK_REQUIRED_COMPONENTS_MACRO
-	)
-
-install(
-	FILES
-	"${CMAKE_CURRENT_BINARY_DIR}/${NS_GETOPT_INSTALL_CONFIGDIR}/ns_getoptConfig.cmake"
-	"${CMAKE_CURRENT_BINARY_DIR}/ns_getoptConfigVersion.cmake"
-	DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
-	)
-
-install(TARGETS ${PROJECT_NAME} EXPORT ns_getoptTargets)
-
-export(EXPORT ns_getoptTargets
-	FILE "${CMAKE_CURRENT_BINARY_DIR}/ns_getoptTargets.cmake"
-	)
-
-install(
-	EXPORT ns_getoptTargets FILE ns_getoptTargets.cmake
-	DESTINATION ${NS_GETOPT_INSTALL_CONFIGDIR}
-	)
-
-export(PACKAGE ${PROJECT_NAME})
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # Examples
 option(BUILD_EXAMPLES "Build accompanying examples." Off)

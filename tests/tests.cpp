@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main()
+﻿#define CATCH_CONFIG_MAIN // This tells Catch to provide a main()
 #include <catch.hpp>
 
 #include <ns_getopt/ns_getopt.h>
@@ -15,7 +15,7 @@ TEST_CASE("Argument detection", "[parsing]") {
 		return true;
 	};
 
-	auto multi_fun = [](opt::multi_array&& a, size_t len) {
+	auto multi_fun = [](const opt::multi_array& a, size_t len) {
 		printf("Muli args : ");
 		for (size_t i = 0; i < len; ++i) {
 			printf("%.*s ", (int)a[i].size(), a[i].data());
@@ -54,12 +54,12 @@ TEST_CASE("Argument detection", "[parsing]") {
 		{ "default", opt::type::default_arg, my_function,
 				"An example of an argument with default value.", 'd',
 				"my_default_val" },
-		{ "multi", opt::type::multi_arg, multi_fun, 3,
+		{ "multi", opt::type::multi_arg, multi_fun,
 				"This accepts 3 space seperated values.\n"
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description.",
-				'm' },
+				'm', 3 },
 		{ "in_file", opt::type::raw_arg, raw_fun,
 				"Description for file 1.\nIt can be multiple\nlines too." },
 		{ "out_file", opt::type::raw_arg, raw_fun,
@@ -98,12 +98,12 @@ TEST_CASE("Argument detection", "[parsing]") {
 			{ "default", opt::type::default_arg, my_function,
 					"An example of an argument with default value.", 'd',
 					"my_default_val" },
-			{ "multi", opt::type::multi_arg, multi_fun, 3,
+			{ "multi", opt::type::multi_arg, multi_fun,
 					"This accepts 3 space seperated values.\n"
 					"You can also have long descriptions that get\n"
 					"automatically aligned simply by using \\n in\n"
 					"your description.",
-					'm' },
+					'm', 3 },
 			{ "in_file", opt::type::raw_arg, raw_fun,
 					"Description for file 1.\nIt can be multiple\nlines too." },
 			{ "out_file", opt::type::raw_arg, raw_fun,
@@ -140,12 +140,12 @@ TEST_CASE("Argument detection", "[parsing]") {
 		{ "default", opt::type::default_arg, my_function,
 				"An example of an argument with default value.", 'd',
 				"my_default_val" },
-		{ "multi", opt::type::multi_arg, multi_fun, 3,
+		{ "multi", opt::type::multi_arg, multi_fun,
 				"This accepts 3 space seperated values.\n"
 				"You can also have long descriptions that get\n"
 				"automatically aligned simply by using \\n in\n"
 				"your description.",
-				'm' },
+				'm', 3 },
 		{ "in_file", opt::type::raw_arg, raw_fun,
 				"Description for file 1.\nIt can be multiple\nlines too." },
 		{ "out_file", opt::type::raw_arg, raw_fun,
@@ -469,8 +469,8 @@ TEST_CASE("User failure", "[parsing]") {
 			{ "test3", opt::type::required_arg,
 					[](std::string_view) { return false; }, "Always fails." },
 			{ "test4", opt::type::multi_arg,
-					[](opt::multi_array&&, size_t) { return false; }, 2,
-					"Always fails." },
+					[](const opt::multi_array&, size_t) { return false; },
+					"Always fails.", 2 },
 			{ "test5", opt::type::raw_arg,
 					[](std::string_view) { return false; }, "Always fails." },
 	} };

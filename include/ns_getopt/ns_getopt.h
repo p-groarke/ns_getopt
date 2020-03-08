@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BSD 3-Clause License
  *
  * Copyright (c) 2017, Philippe Groarke
@@ -41,9 +41,11 @@
 #include <string_view>
 
 namespace opt {
-
 /* Default multi argument array. */
-using multi_array = std::array<std::string_view, 8>; // TODO: Size build option.
+constexpr size_t multi_array_max_size = 8;
+using multi_array
+		= std::array<std::string_view, multi_array_max_size>; // TODO: Size
+															  // build option.
 /* Used for stack strings (char s[N]). */
 constexpr size_t stack_string_size = 128;
 
@@ -73,17 +75,17 @@ struct argument {
 
 	inline argument(std::string_view long_arg, type arg_type,
 			const std::function<bool()>& no_arg_func,
-			std::string_view description = "", char&& short_arg = '\0');
+			std::string_view description = "", char short_arg = '\0');
 
 	inline argument(std::string_view long_arg, type arg_type,
 			const std::function<bool(std::string_view)>& one_arg_func,
-			std::string_view description = "", char&& short_arg = '\0',
+			std::string_view description = "", char short_arg = '\0',
 			std::string_view default_arg = "");
 
 	inline argument(std::string_view long_arg, type arg_type,
-			const std::function<bool(multi_array&&, size_t)>&,
-			size_t multi_max_subargs, std::string_view description = "",
-			char&& short_arg = '\0');
+			const std::function<bool(const multi_array&, size_t)>&,
+			std::string_view description = "", char short_arg = '\0',
+			size_t multi_max_subargs = multi_array_max_size);
 
 	inline void asserts();
 };
@@ -115,7 +117,7 @@ struct options {
 			= [](std::string_view) { return true; },
 			int exit_code = -1);
 
-	inline ~options(){}; // Fix clang < 4.0
+	// inline ~options(){}; // Fix clang < 4.0
 };
 
 template <size_t args_size>
@@ -197,7 +199,7 @@ inline bool has_flag(const flag flags, flag flag_to_check);
 /* Implementation. */
 inline argument::argument(std::string_view long_arg, type arg_type,
 		const std::function<bool()>& no_arg_func, std::string_view description,
-		char&& short_arg)
+		char short_arg)
 		: no_arg_func(no_arg_func)
 		, long_arg(long_arg)
 		, description(description)
@@ -212,7 +214,7 @@ inline argument::argument(std::string_view long_arg, type arg_type,
 
 inline argument::argument(std::string_view long_arg, type arg_type,
 		const std::function<bool(std::string_view)>& one_arg_func,
-		std::string_view description, char&& short_arg,
+		std::string_view description, char short_arg,
 		std::string_view default_arg)
 		: one_arg_func(one_arg_func)
 		, long_arg(long_arg)
@@ -229,9 +231,8 @@ inline argument::argument(std::string_view long_arg, type arg_type,
 }
 
 inline argument::argument(std::string_view long_arg, type arg_type,
-		const std::function<bool(multi_array&&, size_t)>& multi_arg_func,
-		size_t multi_max_subargs, std::string_view description,
-		char&& short_arg)
+		const std::function<bool(const multi_array&, size_t)>& multi_arg_func,
+		std::string_view description, char short_arg, size_t multi_max_subargs)
 		: multi_arg_func(multi_arg_func)
 		, long_arg(long_arg)
 		, description(description)
