@@ -63,7 +63,7 @@ enum class type : std::uint8_t {
 struct argument {
 	const std::function<bool()> no_arg_func;
 	const std::function<bool(std::string_view)> one_arg_func;
-	const std::function<bool(multi_array&&, size_t)> multi_arg_func;
+	const std::function<bool(const multi_array&, size_t)> multi_arg_func;
 	const std::string_view long_arg;
 	const std::string_view description;
 	const std::string_view default_arg;
@@ -567,9 +567,11 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 				size_t current_multi_arg = 0;
 
 				while (i + 1 < argc) {
+					// Found next option. Stop parsing.
 					if (strncmp(argv[i + 1], "-", 1) == 0) {
 						break;
 					}
+
 					a[current_multi_arg] = argv[++i];
 					++current_multi_arg;
 
@@ -584,8 +586,7 @@ inline bool parse_arguments(int argc, char const* const* argv, argument* args,
 						return do_exit(args, args_size, option, argv[0]);
 					}
 				}
-				if (!found_arg.multi_arg_func(
-							std::move(a), current_multi_arg)) {
+				if (!found_arg.multi_arg_func(a, current_multi_arg)) {
 					maybe_print_msg(option,
 							make_stack_string(
 									"problem parsing multi-arguments."));
